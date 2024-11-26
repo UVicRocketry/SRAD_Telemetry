@@ -1,4 +1,4 @@
-# Project-Title 
+# SRAD_Telemetry
 **Project Charter:** [[Project Template]](https://docs.google.com/document/d/1MUbJ3Rik60RhbwDgCIB3yboMpBxUQmVMdgNTDUj5A6c/edit).
 
 ## Description
