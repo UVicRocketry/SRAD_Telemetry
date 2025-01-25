@@ -1,0 +1,10 @@
+02:00:38 **** Incremental Build of configuration Debug for project nucleo_spi ****
+make -j3 all 
+arm-none-eabi-size  nucleo_spi.elf 
+   text	   data	    bss	    dec	    hex	filename
+  31444	    380	   6268	  38092	   94cc	nucleo_spi.elf
+Finished building: default.size.stdout
+ 
+
+02:00:38 Build Finished. 0 errors, 0 warnings. (took 309ms)
+

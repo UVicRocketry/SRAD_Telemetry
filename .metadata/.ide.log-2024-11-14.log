@@ -1,0 +1,149 @@
+2024-11-15 00:04:05,379 [INFO] NvicIntPanel:101 - NVIC parent = com.st.microxplorer.plugins.ip.nvic.MultiNvicIntPanel[,0,0,568x473,layout=javax.swing.BoxLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=,minimumSize=,preferredSize=]
+2024-11-15 00:04:20,208 [INFO] NvicIntPanel:101 - NVIC parent = com.st.microxplorer.plugins.ip.nvic.MultiNvicIntPanel[,0,0,0x0,invalid,layout=javax.swing.BoxLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=,minimumSize=,preferredSize=]
+2024-11-15 00:04:20,361 [INFO] NvicIntPanel:101 - NVIC parent = com.st.microxplorer.plugins.ip.nvic.MultiNvicIntPanel[,0,0,0x0,invalid,layout=javax.swing.BoxLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=,minimumSize=,preferredSize=]
+2024-11-15 00:04:38,132 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 574872016 Bytes (728760320)
+2024-11-15 00:04:38,283 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 591122896 Bytes (728760320)
+2024-11-15 00:04:39,818 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 327706312 Bytes (728760320)
+2024-11-15 00:04:40,079 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: SPI
+2024-11-15 00:04:40,080 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: USB_OTG_FS
+2024-11-15 00:04:40,080 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: NVIC
+2024-11-15 00:04:40,080 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: USART
+2024-11-15 00:04:40,080 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: USB_DEVICE
+2024-11-15 00:04:40,080 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: SYS
+2024-11-15 00:04:40,080 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: GPIO
+2024-11-15 00:04:40,080 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: RCC
+2024-11-15 00:04:40,081 [INFO] CodeGenerator:807 - code generatio: config db path: /Applications/STM32CubeIDE.app/Contents/Eclipse/plugins/com.st.stm32cube.common.mx_6.12.1.202409122256//db/
+2024-11-15 00:04:40,106 [WARN] IP:2191 - DEVICE_SERIAL0_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:04:40,106 [WARN] IP:2191 - DEVICE_SERIAL1_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:04:40,106 [WARN] IP:2191 - DEVICE_SERIAL2_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:04:40,282 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/license.tmp_save
+2024-11-15 00:04:40,567 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/license.tmp
+2024-11-15 00:04:40,611 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/gpio.tmp_save
+2024-11-15 00:04:40,825 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/gpio.tmp
+2024-11-15 00:04:40,950 [WARN] IPConfigManager:3005 - Warning: the RefConfig PWREx_EnableUSBVoltageDetector is not available in your config.xml file
+2024-11-15 00:04:40,961 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_vars.tmp_save
+2024-11-15 00:04:41,150 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_vars.tmp
+2024-11-15 00:04:41,157 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_inc.tmp_save
+2024-11-15 00:04:41,306 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_inc.tmp
+2024-11-15 00:04:41,311 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_HalInit.tmp_save
+2024-11-15 00:04:41,552 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_HalInit.tmp
+2024-11-15 00:04:41,558 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_Msp.tmp_save
+2024-11-15 00:04:41,796 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_Msp.tmp
+2024-11-15 00:04:42,280 [INFO] Middleware:1439 - No code input for Bsp Dependency
+2024-11-15 00:04:42,358 [INFO] Middleware:1439 - No code input for Bsp Dependency
+2024-11-15 00:04:42,377 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usb_device.c_save
+2024-11-15 00:04:42,599 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usb_device.c
+2024-11-15 00:04:42,604 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usb_device.h_save
+2024-11-15 00:04:42,744 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usb_device.h
+2024-11-15 00:04:42,749 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/Target/usbd_conf.h_save
+2024-11-15 00:04:42,941 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/Target/usbd_conf.h
+2024-11-15 00:04:42,945 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/Target/usbd_conf.c_save
+2024-11-15 00:04:43,126 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/Target/usbd_conf.c
+2024-11-15 00:04:43,131 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_desc.h_save
+2024-11-15 00:04:43,283 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_desc.h
+2024-11-15 00:04:43,290 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_desc.c_save
+2024-11-15 00:04:43,448 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_desc.c
+2024-11-15 00:04:43,458 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_cdc_if.h_save
+2024-11-15 00:04:43,605 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_cdc_if.h
+2024-11-15 00:04:43,610 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_cdc_if.c_save
+2024-11-15 00:04:43,768 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_cdc_if.c
+2024-11-15 00:04:43,786 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Src/stm32f4xx_it.c_save
+2024-11-15 00:04:44,237 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Src/stm32f4xx_it.c
+2024-11-15 00:04:44,246 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Inc/stm32f4xx_it.h_save
+2024-11-15 00:04:44,386 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Inc/stm32f4xx_it.h
+2024-11-15 00:04:44,417 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Src/stm32f4xx_hal_msp.c_save
+2024-11-15 00:04:44,622 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Src/stm32f4xx_hal_msp.c
+2024-11-15 00:04:44,628 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/system.tmp_save
+2024-11-15 00:04:44,789 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/system.tmp
+2024-11-15 00:04:44,801 [INFO] CodeEngine:311 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Inc/stm32f4xx_hal_conf.h_save
+2024-11-15 00:04:44,953 [INFO] CodeEngine:335 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Inc/stm32f4xx_hal_conf.h
+2024-11-15 00:04:45,050 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Inc/main.h_save
+2024-11-15 00:04:45,219 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Inc/main.h
+2024-11-15 00:04:45,224 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Src/main.c_save
+2024-11-15 00:04:45,448 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Src/main.c
+2024-11-15 00:04:46,141 [INFO] ProjectBuilder:3249 - Time for Copy HAL[1] : 270mS.
+2024-11-15 00:04:46,147 [INFO] ProjectBuilder:4828 - Project Generator version: 4.5.0-B34
+2024-11-15 00:04:46,405 [INFO] ConfigFileManager:1531 - The Die is : DIE431
+2024-11-15 00:04:48,142 [INFO] ProjectBuilder:5097 - Time for Generating toolchain IDE Files: 1994mS.
+2024-11-15 00:04:48,142 [INFO] ProjectBuilder:3107 - Time for Copy CMSIS : 0mS.
+2024-11-15 00:04:48,146 [INFO] ProjectBuilder:3107 - Time for Copy CMSIS : 0mS.
+2024-11-15 00:05:15,794 [INFO] NvicIntPanel:101 - NVIC parent = com.st.microxplorer.plugins.ip.nvic.MultiNvicIntPanel[,0,0,0x0,invalid,layout=javax.swing.BoxLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=,minimumSize=,preferredSize=]
+2024-11-15 00:05:15,857 [WARN] IP:2191 - DEVICE_SERIAL0_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:05:15,857 [WARN] IP:2191 - DEVICE_SERIAL1_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:05:15,857 [WARN] IP:2191 - DEVICE_SERIAL2_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:05:15,859 [WARN] IP:2191 - DEVICE_SERIAL0_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:05:15,859 [WARN] IP:2191 - DEVICE_SERIAL1_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:05:15,859 [WARN] IP:2191 - DEVICE_SERIAL2_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:05:15,937 [WARN] IP:2191 - DEVICE_SERIAL0_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:05:15,937 [WARN] IP:2191 - DEVICE_SERIAL1_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:05:15,937 [WARN] IP:2191 - DEVICE_SERIAL2_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:05:15,972 [WARN] IP:2191 - DEVICE_SERIAL0_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:05:15,972 [WARN] IP:2191 - DEVICE_SERIAL1_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:05:15,972 [WARN] IP:2191 - DEVICE_SERIAL2_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:05:16,062 [INFO] NvicIntPanel:101 - NVIC parent = com.st.microxplorer.plugins.ip.nvic.MultiNvicIntPanel[,0,0,0x0,invalid,layout=javax.swing.BoxLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=,minimumSize=,preferredSize=]
+2024-11-15 00:05:18,703 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 637901656 Bytes (990904320)
+2024-11-15 00:05:18,834 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 654170384 Bytes (990904320)
+2024-11-15 00:05:19,158 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 701356304 Bytes (990904320)
+2024-11-15 00:05:19,366 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: SPI
+2024-11-15 00:05:19,366 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: USB_OTG_FS
+2024-11-15 00:05:19,366 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: NVIC
+2024-11-15 00:05:19,366 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: USART
+2024-11-15 00:05:19,366 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: USB_DEVICE
+2024-11-15 00:05:19,366 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: SYS
+2024-11-15 00:05:19,367 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: GPIO
+2024-11-15 00:05:19,367 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: RCC
+2024-11-15 00:05:19,367 [INFO] CodeGenerator:807 - code generatio: config db path: /Applications/STM32CubeIDE.app/Contents/Eclipse/plugins/com.st.stm32cube.common.mx_6.12.1.202409122256//db/
+2024-11-15 00:05:19,393 [WARN] IP:2191 - DEVICE_SERIAL0_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:05:19,393 [WARN] IP:2191 - DEVICE_SERIAL1_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:05:19,393 [WARN] IP:2191 - DEVICE_SERIAL2_CDC_FS not found: check if there is a RefParameter without a condition.
+2024-11-15 00:05:19,497 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/license.tmp_save
+2024-11-15 00:05:19,591 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/license.tmp
+2024-11-15 00:05:19,621 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/gpio.tmp_save
+2024-11-15 00:05:19,751 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/gpio.tmp
+2024-11-15 00:05:19,873 [WARN] IPConfigManager:3005 - Warning: the RefConfig PWREx_EnableUSBVoltageDetector is not available in your config.xml file
+2024-11-15 00:05:19,883 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_vars.tmp_save
+2024-11-15 00:05:20,016 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_vars.tmp
+2024-11-15 00:05:20,019 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_inc.tmp_save
+2024-11-15 00:05:20,175 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_inc.tmp
+2024-11-15 00:05:20,178 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_HalInit.tmp_save
+2024-11-15 00:05:20,330 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_HalInit.tmp
+2024-11-15 00:05:20,333 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_Msp.tmp_save
+2024-11-15 00:05:20,488 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/usb_otg_fs_Msp.tmp
+2024-11-15 00:05:20,893 [INFO] Middleware:1439 - No code input for Bsp Dependency
+2024-11-15 00:05:20,946 [INFO] Middleware:1439 - No code input for Bsp Dependency
+2024-11-15 00:05:20,955 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usb_device.c_save
+2024-11-15 00:05:21,115 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usb_device.c
+2024-11-15 00:05:21,119 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usb_device.h_save
+2024-11-15 00:05:21,238 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usb_device.h
+2024-11-15 00:05:21,244 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/Target/usbd_conf.h_save
+2024-11-15 00:05:21,360 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/Target/usbd_conf.h
+2024-11-15 00:05:21,363 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/Target/usbd_conf.c_save
+2024-11-15 00:05:21,462 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/Target/usbd_conf.c
+2024-11-15 00:05:21,467 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_desc.h_save
+2024-11-15 00:05:21,565 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_desc.h
+2024-11-15 00:05:21,568 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_desc.c_save
+2024-11-15 00:05:21,673 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_desc.c
+2024-11-15 00:05:21,679 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_cdc_if.h_save
+2024-11-15 00:05:21,788 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_cdc_if.h
+2024-11-15 00:05:21,794 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_cdc_if.c_save
+2024-11-15 00:05:21,895 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/USB_DEVICE/App/usbd_cdc_if.c
+2024-11-15 00:05:21,904 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Src/stm32f4xx_it.c_save
+2024-11-15 00:05:21,996 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Src/stm32f4xx_it.c
+2024-11-15 00:05:22,000 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Inc/stm32f4xx_it.h_save
+2024-11-15 00:05:22,102 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Inc/stm32f4xx_it.h
+2024-11-15 00:05:22,120 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Src/stm32f4xx_hal_msp.c_save
+2024-11-15 00:05:22,281 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Src/stm32f4xx_hal_msp.c
+2024-11-15 00:05:22,285 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/system.tmp_save
+2024-11-15 00:05:22,390 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/MXTmpFiles/system.tmp
+2024-11-15 00:05:22,400 [INFO] CodeEngine:311 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Inc/stm32f4xx_hal_conf.h_save
+2024-11-15 00:05:22,502 [INFO] CodeEngine:335 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Inc/stm32f4xx_hal_conf.h
+2024-11-15 00:05:22,571 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Inc/main.h_save
+2024-11-15 00:05:22,678 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Inc/main.h
+2024-11-15 00:05:22,684 [INFO] CodeEngine:255 - oldGeneratedFile, /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Src/main.c_save
+2024-11-15 00:05:22,847 [INFO] CodeEngine:279 - Generated code: /Users/Zarina/STM32CubeIDE/workspace_1.16.1/SRAD_Telemetry/Core/Src/main.c
+2024-11-15 00:05:23,511 [INFO] ProjectBuilder:3249 - Time for Copy HAL[1] : 225mS.
+2024-11-15 00:05:23,517 [INFO] ProjectBuilder:4828 - Project Generator version: 4.5.0-B34
+2024-11-15 00:05:23,748 [INFO] ConfigFileManager:1531 - The Die is : DIE431
+2024-11-15 00:05:25,381 [INFO] ProjectBuilder:5097 - Time for Generating toolchain IDE Files: 1864mS.
+2024-11-15 00:05:25,382 [INFO] ProjectBuilder:3107 - Time for Copy CMSIS : 0mS.
+2024-11-15 00:05:25,415 [INFO] ProjectBuilder:3107 - Time for Copy CMSIS : 0mS.

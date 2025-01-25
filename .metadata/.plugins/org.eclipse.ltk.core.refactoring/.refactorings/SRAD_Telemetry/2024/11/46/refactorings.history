@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;SRAD_Telemetry/GPS_Module Debug.cfg&apos; to &apos;SRAD_Telemetry Debug.cfg&apos;" description="Rename resource &apos;GPS_Module Debug.cfg&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="GPS_Module Debug.cfg" name="SRAD_Telemetry Debug.cfg" stamp="1731638919749" updateReferences="true"/>
+</session>

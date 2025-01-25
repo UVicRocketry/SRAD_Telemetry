@@ -1,0 +1,10 @@
+01:51:43 **** Incremental Build of configuration Debug for project GPS_Module ****
+make -j3 all 
+arm-none-eabi-size  GPS_Module.elf 
+   text	   data	    bss	    dec	    hex	filename
+  33892	    252	   8884	  43028	   a814	GPS_Module.elf
+Finished building: default.size.stdout
+ 
+
+01:51:43 Build Finished. 0 errors, 0 warnings. (took 308ms)
+

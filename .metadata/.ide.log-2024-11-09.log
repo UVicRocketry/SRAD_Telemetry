@@ -1,0 +1,4 @@
+2024-11-10 09:49:09,719 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 292113232 Bytes (880803840)
+2024-11-10 09:49:09,858 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 305218384 Bytes (880803840)
+2024-11-10 09:49:10,440 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 362890064 Bytes (880803840)
+2024-11-10 09:49:10,683 [INFO] ProjectBuilder:2320 - IP not ready for code generation: Clock

@@ -1,0 +1,10 @@
+16:01:38 **** Incremental Build of configuration Debug for project SRAD_Telemetry ****
+make -j3 all 
+arm-none-eabi-size  SRAD_Telemetry.elf 
+   text	   data	    bss	    dec	    hex	filename
+  40276	    256	   8968	  49500	   c15c	SRAD_Telemetry.elf
+Finished building: default.size.stdout
+ 
+
+16:01:38 Build Finished. 0 errors, 0 warnings. (took 306ms)
+
