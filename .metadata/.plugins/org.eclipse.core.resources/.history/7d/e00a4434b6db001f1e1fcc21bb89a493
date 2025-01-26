@@ -1,0 +1,483 @@
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2024 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include "usb_device.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+#include "lr_fhss_mac.h"
+#include "lr_fhss_v1_base_types.h"
+#include "lr_fhss_mac.h"
+#include "sx126x_driver_version.h"
+#include "sx126x_hal.h"
+#include "sx126x_lr_fhss.h"
+#include "sx126x_regs.h"
+#include "sx126x.h"
+#include "context.h"
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+#define SPI_TIMEOUT 1000
+#define RF_FREQUENCY 915000000
+#define TIMEOUT 1000
+#define PWR_DBM 4
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+SPI_HandleTypeDef hspi1;
+
+UART_HandleTypeDef huart2;
+
+/* USER CODE BEGIN PV */
+
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_USART2_UART_Init(void);
+static void MX_SPI1_Init(void);
+/* USER CODE BEGIN PFP */
+
+void sx126x_init(e22trans *transmitter);
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
+
+uint8_t gpsBuff[82];
+uint8_t transmitRx[10];
+uint8_t sysFlag = 0;
+uint8_t txDone = 1;
+uint8_t callsign[6] = "123123";
+/* USER CODE END 0 */
+
+/**
+  * @brief  The application entry point.
+  * @retval int
+  */
+int main(void)
+{
+
+  /* USER CODE BEGIN 1 */
+//e22 stm32 context and param struct
+ e22trans transmitter = {
+
+	//hardware context
+	  {GPIOA, 			// Chip select port
+	  GPIO_PIN_15,		// Chip select pin
+	  GPIOB, 			// Busy pin port
+	  GPIO_PIN_6, 		// Busy pin
+	  GPIOB,			// Reset pin port
+	  GPIO_PIN_7, 		// Reset pin
+	  &hspi1}, 			// SPI handler
+	//lora params
+	 {0x09,				//!< Preamble length in symbols
+	 0x05,				//!< Header type
+	 0x01,				//!< Payload length in bytes
+	 0x00},
+
+	 //lora packet params
+
+	{8,    				// Preamble length in bits
+	0,    			    // Preamble detection length
+	11, 				// Sync word length in bits
+	0,   			    // Address filtering configuration
+	0},                 // Whitening configuration
+
+
+	 //Power Amplifier params
+	  {0x01, //pa_duty_cycle;
+	  0x00, // uint8_t hp_max;
+	  0x01, //uint8_t device_sel;
+	  0x01}, //uint8_t pa_lut;*/
+
+	  PWR_DBM,	//output power in dbm
+ };
+
+
+  /* USER CODE END 1 */
+
+  /* MCU Configuration--------------------------------------------------------*/
+
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
+  SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_USB_DEVICE_Init();
+  MX_USART2_UART_Init();
+  MX_SPI1_Init();
+  /* USER CODE BEGIN 2 */
+
+
+  HAL_UART_Receive_IT(&huart2, gpsBuff, sizeof(gpsBuff));
+  HAL_SPI_Receive_IT(&hspi1, transmitRx, sizeof(transmitRx));
+
+
+  sx126x_init(&transmitter);
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+  }
+  /* USER CODE END 3 */
+}
+
+/**
+  * @brief System Clock Configuration
+  * @retval None
+  */
+void SystemClock_Config(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+  /** Configure the main internal regulator output voltage
+  */
+  __HAL_RCC_PWR_CLK_ENABLE();
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 25;
+  RCC_OscInitStruct.PLL.PLLN = 192;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/**
+  * @brief SPI1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI1_Init(void)
+{
+
+  /* USER CODE BEGIN SPI1_Init 0 */
+
+  /* USER CODE END SPI1_Init 0 */
+
+  /* USER CODE BEGIN SPI1_Init 1 */
+
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_1LINE;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI1_Init 2 */
+
+  /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 9600;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7|GPIO_PIN_9, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PA15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_15;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB7 PB9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+
+/* USER CODE END MX_GPIO_Init_2 */
+}
+
+/* USER CODE BEGIN 4 */
+void sx126x_init(e22trans *transmitter){
+// Follows sequence of operations laid out it SX126X data sheet
+// for basic TX operation
+ uint8_t message[] = "Hello World";
+
+
+
+	//Reset Transmitter, Reset is active Low.
+	sx126x_hal_reset(&transmitter->hardwareConfig);
+	//Wakeup trasnmitter
+	sx126x_hal_wakeup(&transmitter->hardwareConfig);
+
+
+	//Set operating mode to standby using RC
+	sx126x_set_standby(&transmitter->hardwareConfig,SX126X_STANDBY_CFG_RC);
+
+	//Configures DIO3 to supply power to an external TCXO (Temperature Compensated Crystal Oscillator)
+	//Output 1.8V as stated in E22 datasheet, could be 3.3V as shown in their screen capture.
+	sx126x_set_dio3_as_tcxo_ctrl(&transmitter->hardwareConfig,SX126X_TCXO_CTRL_1_8V ,320);
+
+
+	// Calibrate to value given in E22 data sheet, which calibrates all settings, should take 3.5ms
+	sx126x_cal(&transmitter->hardwareConfig,0xFF);
+
+	//set regulator mode to DC_DC
+	sx126x_set_reg_mode(&transmitter->hardwareConfig,1);
+
+	sx126x_set_standby(&transmitter->hardwareConfig,1);
+	//Configure  to use Lora
+	sx126x_set_pkt_type(&transmitter->hardwareConfig,1); //lora
+
+	//3. Set frequency
+	sx126x_set_rf_freq(&transmitter->hardwareConfig,RF_FREQUENCY);
+
+	//4. set Pa params
+	sx126x_set_pa_cfg(&transmitter->hardwareConfig, &transmitter->paParams);
+
+	//setlora for private network
+	sx126x_write_register(&transmitter->hardwareConfig,0x0740,(uint8_t*)0x14,1);
+	sx126x_write_register(&transmitter->hardwareConfig,0x0741,(uint8_t*)0x24,1);
+
+	//5. set trasnmit params
+	sx126x_set_tx_params(&transmitter->hardwareConfig,PWR_DBM,SX126X_RAMP_40_US);
+
+	//6.Define where the data payload will be stored.
+	sx126x_set_buffer_base_address(&transmitter->hardwareConfig,0x00,0x90);
+
+	//7.Send Payload to data buffer
+	sx126x_write_buffer(&transmitter->hardwareConfig,0x00,message,sizeof(message));
+	//8. Define Modulation parameters
+	sx126x_set_lora_mod_params(&transmitter->hardwareConfig,&transmitter->loraParams);
+
+
+	//10.set dio
+	sx126x_set_dio_irq_params(&transmitter->hardwareConfig, 1 , 1, 0, 0);
+
+
+	sx126x_set_tx(&transmitter->hardwareConfig,TIMEOUT);
+
+
+}
+
+
+
+
+
+
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == GPIO_PIN_8)  // Check which pin triggered the interrupt
+    {
+       txDone = true; //set flag
+    }
+
+    // Handle other EXTI pins as needed
+}
+
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
+
+
+    CDC_Transmit_FS(transmitRx, sizeof(transmitRx));
+    // Re-enable SPI Receive interrupt for the next data
+	HAL_SPI_Receive_IT(&hspi1, transmitRx, sizeof(transmitRx));
+
+
+}	// Re-enable SPI Receive interrupt for the next data
+
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	 // Re-enable UART Receive interrupt for the next data
+	HAL_UART_Receive_IT(&huart2, gpsBuff, sizeof(gpsBuff)); // 10 bytes or your buffer size
+
+	// Set system flag for gps sentence transmission
+	sysFlag = 10;
+
+
+
+}
+/* USER CODE END 4 */
+
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
+  /* User can add his own implementation to report the HAL error return state */
+  __disable_irq();
+  while (1)
+  {
+
+  }
+  /* USER CODE END Error_Handler_Debug */
+}
+
+#ifdef  USE_FULL_ASSERT
+/**
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
+void assert_failed(uint8_t *file, uint32_t line)
+{
+  /* USER CODE BEGIN 6 */
+  /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* USER CODE END 6 */
+}
+#endif /* USE_FULL_ASSERT */

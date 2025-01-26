@@ -54,7 +54,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
-
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -77,9 +76,9 @@ extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
 
 uint8_t gpsBuff[82];
 uint8_t transmitRx[10];
-uint8_t sysFlag = 0;
-uint8_t txDone = 1;
-uint8_t callsign[6] = "123123";
+uint8_t sysFlag = 10;
+uint8_t txDone = 0;
+
 /* USER CODE END 0 */
 
 /**
@@ -93,7 +92,7 @@ int main(void)
 //e22 stm32 context and param struct
  e22trans transmitter = {
 
-	//hardware context
+	//Hardware context
 	  {GPIOA, 			// Chip select port
 	  GPIO_PIN_15,		// Chip select pin
 	  GPIOB, 			// Busy pin port
@@ -101,28 +100,30 @@ int main(void)
 	  GPIOB,			// Reset pin port
 	  GPIO_PIN_7, 		// Reset pin
 	  &hspi1}, 			// SPI handler
-	//lora params
-	 {0x09,							//Divider to get 100 bits per minute
-	 0x05,							//Frequency deviation in herz
-	 0x01,	//Gaussian BT 1 pulse shape
-	 0x00},		    //Bandwidth
 
-	 // packet params
+	//Lora params
+	  {0x09,			// Preamble length in symbols
+	  0x05,				// Header type
+	  0x01,				// Payload length in bytes
+	  0x00},
 
-	{8,    //!< Preamble length in bits
-	0,      //!< Preamble detection length
-	11, 	//!< Sync word length in bits
-	0,      //!< Address filtering configuration
-	0},              //!< Whitening configuration
+	 //lora packet params
+	  {8,    			// Preamble length in bits
+	  0,    		    // Preamble detection length
+	  11, 				// Sync word length in bits
+	  0,   			    // Address filtering configuration
+	  0},				// Whitening configuration
 
 
-	 //Power Amplifier params
-	  {0x01, //pa_duty_cycle;
-	  0x00, // uint8_t hp_max;
-	  0x01, //uint8_t device_sel;
-	  0x01}, //uint8_t pa_lut;*/
+	//Power Amplifier params
+	  {0x01, 			//pa_duty_cycle;
+	  0x00, 			// hp_max;
+	  0x01, 			// device_sel;
+	  0x01}, 			// pa_lut;*/
 
-	  PWR_DBM,	//output power in dbm
+	//Misc
+	  PWR_DBM,			//output power in dbm
+	  "V3M1M4",         //callsign
  };
 
 
@@ -157,17 +158,32 @@ int main(void)
 
 
   sx126x_init(&transmitter);
+
+
   /* USER CODE END 2 */
-  uint8_t message[] = "Hello World";
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-		sx126x_write_buffer(&transmitter.hardwareConfig,0x00,message,sizeof(message));
-		HAL_Delay(1000);
-		sx126x_set_tx(&transmitter.hardwareConfig,TIMEOUT);
+	  switch(sysFlag){
 
+	  //flag 10 is set once microcontroller gets a sentence from gps.
+	  case 10: //write to transmitter FIFO buffer
+		  	  sx126x_write_buffer(&transmitter.hardwareConfig,0x06,gpsBuff,sizeof(gpsBuff));
+		  	  //transmit once last trasnsmition has been sent.
+
+		  		sx126x_set_tx(&transmitter.hardwareConfig, 0x00 );
+
+		  	  break;
+
+
+
+	  default: break;
+
+
+	  }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -312,7 +328,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7|GPIO_PIN_9, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PA15 */
   GPIO_InitStruct.Pin = GPIO_PIN_15;
@@ -327,8 +343,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  /*Configure GPIO pins : PB7 PB9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -353,66 +369,46 @@ static void MX_GPIO_Init(void)
 void sx126x_init(e22trans *transmitter){
 // Follows sequence of operations laid out it SX126X data sheet
 // for basic TX operation
- uint8_t message[] = "Hellow World";
-
-
+	sx126x_context* stm32Context = &transmitter->hardwareConfig ;
 
 	//Reset Transmitter, Reset is active Low.
-	sx126x_hal_reset(&transmitter->hardwareConfig);
+	sx126x_hal_reset(stm32Context);
 	//Wakeup trasnmitter
-	sx126x_hal_wakeup(&transmitter->hardwareConfig);
-
-
-	//1. Set operating mode to standby
-	sx126x_set_standby(&transmitter->hardwareConfig,SX126X_STANDBY_CFG_RC);
-
-
-	sx126x_set_dio3_as_tcxo_ctrl(&transmitter->hardwareConfig,0x07 ,320);
-	//set sync word
-
-	sx126x_write_register( &transmitter->hardwareConfig, 0x06C0, 0x00,1);
-
-
-	sx126x_set_dio3_as_tcxo_ctrl(&transmitter->hardwareConfig,0x02 ,320);
-
-	sx126x_write_register(&transmitter->hardwareConfig,0x0740,(uint8_t*)0x14,1);
-	sx126x_write_register(&transmitter->hardwareConfig,0x0741,(uint8_t*)0x24,1);
-
-	sx126x_cal(&transmitter->hardwareConfig,0xFF);
-
-	sx126x_set_standby(&transmitter->hardwareConfig,SX126X_STANDBY_CFG_RC);
-	sx126x_set_reg_mode(&transmitter->hardwareConfig,1);
-
-	sx126x_set_standby(&transmitter->hardwareConfig,1);
-	//2. Define protocol
-	sx126x_set_pkt_type(&transmitter->hardwareConfig,1); //lora
-
+	sx126x_hal_wakeup(stm32Context);
+	//Set operating mode to standby using RC
+	sx126x_set_standby(stm32Context,SX126X_STANDBY_CFG_RC);
+	//Configures DIO3 to supply power to an external TCXO (Temperature Compensated Crystal Oscillator)
+	//Output 1.8V as stated in E22 datasheet, could be 3.3V as shown in their screen capture.
+	sx126x_set_dio3_as_tcxo_ctrl(stm32Context,SX126X_TCXO_CTRL_1_8V ,320);
+	//Calibrate to value given in E22 data sheet, which calibrates all settings, should take 3.5ms
+	sx126x_cal(stm32Context,0xFF);
+	//set regulator mode to DC_DC buck converter
+	sx126x_set_reg_mode(stm32Context,SX126X_REG_MODE_DCDC);
+	//Configure  to use Lora
+	sx126x_set_pkt_type(stm32Context,SX126X_PKT_TYPE_LORA );
 	//3. Set frequency
-	sx126x_set_rf_freq(&transmitter->hardwareConfig,RF_FREQUENCY);
-
+	sx126x_set_rf_freq(stm32Context,RF_FREQUENCY);
 	//4. set Pa params
-	sx126x_set_pa_cfg(&transmitter->hardwareConfig, &transmitter->paParams);
+	sx126x_set_pa_cfg(stm32Context, &transmitter->paParams);
+	//setlora for private network
+	sx126x_write_register(stm32Context,0x0740,(uint8_t*)0x14,1);
+	sx126x_write_register(stm32Context,0x0741,(uint8_t*)0x24,1);
+	//Sset trasnmit params
+	sx126x_set_tx_params(stm32Context,PWR_DBM,SX126X_RAMP_40_US);
+	//Define where the data payload will be stored.
+	sx126x_set_buffer_base_address(stm32Context,0x00,0x90);
+	//Define Modulation parameters
+	sx126x_set_lora_mod_params(stm32Context,&transmitter->loraParams);
 
-	//5. set trasnmit params
-	sx126x_set_tx_params(&transmitter->hardwareConfig,PWR_DBM,SX126X_RAMP_40_US);
+	uint8_t irqMask  = 0x01;
+	uint8_t dio1Mask = 0x01;
+	uint8_t dio2Mask = 0x00;
+	uint8_t dio3Mask = 0x00;
 
-	//6.Define where the data payload will be stored.
-	sx126x_set_buffer_base_address(&transmitter->hardwareConfig,0x00,0x90);
-
-	//7.Send Payload to data buffer
-	sx126x_write_buffer(&transmitter->hardwareConfig,0x00,message,sizeof(message));
-	//8. Define Modulation parameters
-	sx126x_set_lora_mod_params(&transmitter->hardwareConfig,&transmitter->loraParams);
-
-	//9. Define frame format using setpacketparam()
-	sx126x_set_gfsk_pkt_params(&transmitter->hardwareConfig,&transmitter->pktParams);
-
-	//10.set dio
-	sx126x_set_dio_irq_params(&transmitter->hardwareConfig, 1 , 1, 0, 0);
-
-
-
-	sx126x_set_tx(&transmitter->hardwareConfig,TIMEOUT);
+	//Set DIO 1 for
+	sx126x_set_dio_irq_params(stm32Context, irqMask , dio1Mask, dio2Mask, dio3Mask);
+	//copy callsign to first 6 elements of fifo buffer
+	sx126x_write_buffer(stm32Context,0x00,transmitter->callSign,6);
 
 
 }
@@ -425,18 +421,15 @@ void sx126x_init(e22trans *transmitter){
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    if (GPIO_Pin == GPIO_PIN_8)  // Check which pin triggered the interrupt
-    {
-       txDone = true; //set flag
+    if (GPIO_Pin == GPIO_PIN_8){
+       txDone = true; //set transmission flag flag
     }
-
-    // Handle other EXTI pins as needed
 }
 
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
 
 
-    CDC_Transmit_FS(transmitRx, sizeof(transmitRx));
+
     // Re-enable SPI Receive interrupt for the next data
 	HAL_SPI_Receive_IT(&hspi1, transmitRx, sizeof(transmitRx));
 
