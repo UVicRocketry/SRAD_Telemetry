@@ -22,6 +22,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdarg.h>
+
+
 #include "lr_fhss_mac.h"
 #include "lr_fhss_v1_base_types.h"
 #include "lr_fhss_mac.h"
@@ -31,6 +34,7 @@
 #include "sx126x_regs.h"
 #include "sx126x.h"
 #include "context.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,20 +44,17 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define DEBUG_BUFFER_SIZE 128
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
-#define SPI_TIMEOUT 1000
-#define RF_FREQUENCY 915000000
-#define TIMEOUT 1000
-#define PWR_DBM 4
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
+
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -74,10 +75,30 @@ void sx126x_init(e22trans *transmitter);
 /* USER CODE BEGIN 0 */
 extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
 
+
+
 uint8_t gpsBuff[82];
-uint8_t transmitRx[10];
-uint8_t sysFlag = 10;
 uint8_t txDone = 0;
+
+
+
+
+// This function takes a C-string, calculates its length, and sends it via CDC
+void debugPrintf(const char* format, ...) {
+
+
+	static char debugBuffer[DEBUG_BUFFER_SIZE];
+    va_list args;
+    va_start(args, format);
+
+    // vsnprintf writes to debugBuffer, up to its size, including null terminator
+    vsnprintf(debugBuffer, DEBUG_BUFFER_SIZE, format, args);
+
+    va_end(args);
+
+    // Now send the buffer over USB CDC
+    CDC_Transmit_FS((uint8_t*)debugBuffer, (uint16_t)strlen(debugBuffer));
+}
 
 /* USER CODE END 0 */
 
@@ -93,37 +114,40 @@ int main(void)
  e22trans transmitter = {
 
 	//Hardware context
-	  {GPIOA, 			// Chip select port
+	 {GPIOA, 			// Chip select port
 	  GPIO_PIN_15,		// Chip select pin
 	  GPIOB, 			// Busy pin port
 	  GPIO_PIN_6, 		// Busy pin
 	  GPIOB,			// Reset pin port
 	  GPIO_PIN_7, 		// Reset pin
+	  GPIOB,			// TxDone Port
+	  GPIO_PIN_8,		// TxDone Pin
 	  &hspi1}, 			// SPI handler
 
 	//Lora params
-	  {0x09,			// Preamble length in symbols
-	  0x05,				// Header type
-	  0x01,				// Payload length in bytes
-	  0x00},
+	 {SX126X_LORA_SF12,   // Spreading Factor
+	  SX126X_LORA_BW_125, // Bandwidth
+	  SX126X_LORA_CR_4_8, // Coding Rate
+	  0x00},			  // Low data rate optimize
 
 	 //lora packet params
-	  {8,    			// Preamble length in bits
-	  0,    		    // Preamble detection length
-	  11, 				// Sync word length in bits
-	  0,   			    // Address filtering configuration
-	  0},				// Whitening configuration
+	 {12,    			// Preamble length in bits
+	  0x00,    		    // Header type
+	  7,				// Payload Length in bytes
+	  0,   			    // Crc type
+	  0},				// Invert IQ
 
 
 	//Power Amplifier params
-	  {0x01, 			//pa_duty_cycle;
-	  0x00, 			// hp_max;
-	  0x01, 			// device_sel;
-	  0x01}, 			// pa_lut;*/
+	 {0x04, 			// Pa_duty_cycle;
+	  0x01, 			// Hp_max;
+	  0x00, 			// Device_sel;
+	  0x01}, 			// Pa_lut;*/
 
 	//Misc
-	  PWR_DBM,			//output power in dbm
-	  "V3M1M4",         //callsign
+	  3,				// Output power in dbm
+	  915000000,		// Frequency
+	  "VA7GLW",         // Callsign
  };
 
 
@@ -152,12 +176,15 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
-
   HAL_UART_Receive_IT(&huart2, gpsBuff, sizeof(gpsBuff));
-  HAL_SPI_Receive_IT(&hspi1, transmitRx, sizeof(transmitRx));
 
 
   sx126x_init(&transmitter);
+
+
+  uint8_t msg[11] = "-123456789";
+  uint8_t transmitterRx[20];
+
 
 
   /* USER CODE END 2 */
@@ -166,24 +193,21 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+
+
+	  debugPrintf("Writing to Buffer :...\r\n\n\n");
+	  sx126x_write_buffer(&transmitter, 6 , msg, 10);
+	  HAL_Delay(1000);
+
+	  sx126x_read_buffer(&transmitter, 0, transmitterRx, 17);
+	  debugPrintf("Buffer: %s \r\n\n\n",transmitterRx);
+	  sx126x_clear_irq_status( &transmitter, 0x01);
+	  //sx126x_set_tx(&transmitter, 1000);
+	  HAL_Delay(1000);
+
     /* USER CODE END WHILE */
-	  switch(sysFlag){
 
-	  //flag 10 is set once microcontroller gets a sentence from gps.
-	  case 10: //write to transmitter FIFO buffer
-		  	  sx126x_write_buffer(&transmitter.hardwareConfig,0x06,gpsBuff,sizeof(gpsBuff));
-		  	  //transmit once last trasnsmition has been sent.
-
-		  		sx126x_set_tx(&transmitter.hardwareConfig, 0x00 );
-
-		  	  break;
-
-
-
-	  default: break;
-
-
-	  }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -254,7 +278,7 @@ static void MX_SPI1_Init(void)
   /* SPI1 parameter configuration*/
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_1LINE;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
   hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
@@ -328,7 +352,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7|GPIO_PIN_9, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PA15 */
   GPIO_InitStruct.Pin = GPIO_PIN_15;
@@ -343,8 +367,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB7 PB9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_9;
+  /*Configure GPIO pin : PB7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -366,86 +390,106 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+/**
+ * @brief Initializes the SX126x-based E22 transmitter for LoRa transmission.
+ *
+ * This function follows the SX126x datasheet's recommended startup sequence
+ * to prepare the radio for basic transmission using LoRa modulation.
+ * It resets and wakes up the transceiver, configures TCXO control,
+ * performs calibration, sets power and modulation parameters,
+ * and configures interrupt behavior for TX completion.
+ *
+ * @param transmitter Pointer to an e22trans structure containing
+ *                    hardware configuration and LoRa settings.
+ */
+
 void sx126x_init(e22trans *transmitter){
 // Follows sequence of operations laid out it SX126X data sheet
 // for basic TX operation
-	sx126x_context* stm32Context = &transmitter->hardwareConfig ;
 
-	//Reset Transmitter, Reset is active Low.
+	// Get pointer to hardware-specific context
+	sx126x_context* stm32Context = &transmitter->hardwareConfig;
+
+	// Reset Transmitter (Reset is active Low)
 	sx126x_hal_reset(stm32Context);
-	//Wakeup trasnmitter
+
+	// Wake up the transceiver (required after reset or sleep)
 	sx126x_hal_wakeup(stm32Context);
-	//Set operating mode to standby using RC
+
+	// Enter standby mode using internal RC oscillator (fast startup)
 	sx126x_set_standby(stm32Context,SX126X_STANDBY_CFG_RC);
+
 	//Configures DIO3 to supply power to an external TCXO (Temperature Compensated Crystal Oscillator)
 	//Output 1.8V as stated in E22 datasheet, could be 3.3V as shown in their screen capture.
-	sx126x_set_dio3_as_tcxo_ctrl(stm32Context,SX126X_TCXO_CTRL_1_8V ,320);
-	//Calibrate to value given in E22 data sheet, which calibrates all settings, should take 3.5ms
+	sx126x_set_dio3_as_tcxo_ctrl(stm32Context,SX126X_TCXO_CTRL_3_3V ,320);
+
+	//Calibrate all blocks (mask 0xFF enables full calibration: ADC, PLL, etc.)
 	sx126x_cal(stm32Context,0xFF);
-	//set regulator mode to DC_DC buck converter
-	sx126x_set_reg_mode(stm32Context,SX126X_REG_MODE_DCDC);
-	//Configure  to use Lora
+
+	//Set regulator mode to use DC-DC for power saving
+	sx126x_set_reg_mode(stm32Context,SX126X_REG_MODE_LDO);
+
+	//Set packet type to LoRa (alternatively FSK)
 	sx126x_set_pkt_type(stm32Context,SX126X_PKT_TYPE_LORA );
-	//3. Set frequency
-	sx126x_set_rf_freq(stm32Context,RF_FREQUENCY);
-	//4. set Pa params
-	sx126x_set_pa_cfg(stm32Context, &transmitter->paParams);
-	//setlora for private network
-	sx126x_write_register(stm32Context,0x0740,(uint8_t*)0x14,1);
-	sx126x_write_register(stm32Context,0x0741,(uint8_t*)0x24,1);
-	//Sset trasnmit params
-	sx126x_set_tx_params(stm32Context,PWR_DBM,SX126X_RAMP_40_US);
-	//Define where the data payload will be stored.
-	sx126x_set_buffer_base_address(stm32Context,0x00,0x90);
-	//Define Modulation parameters
+
+	//Configure LoRa modulation parameters (e.g., spreading factor, bandwidth, coding rate)
 	sx126x_set_lora_mod_params(stm32Context,&transmitter->loraParams);
 
-	uint8_t irqMask  = 0x01;
-	uint8_t dio1Mask = 0x01;
+	//Configure LoRa packet parameters (e.g., preamble length, payload length, CRC, header type)
+	sx126x_set_lora_pkt_params(stm32Context,&transmitter->pktParams);
+
+	//Set LoRa sync word (0x12 is a public LoRa network sync word)
+	sx126x_set_lora_sync_word(stm32Context, 0x12);
+
+	//Set RF frequency
+	sx126x_set_rf_freq(stm32Context,transmitter->frequency);
+
+	//Configure PA (Power Amplifier) parameters (e.g., PA duty cycle, HP/LP selection)
+	sx126x_set_pa_cfg(stm32Context, &transmitter->paParams);
+
+	//Set TX output power and ramp time (PWR_DBM is a predefined dBm value, ramp in 40 µs)
+	sx126x_set_tx_params(stm32Context,transmitter->paPower,SX126X_RAMP_40_US);
+
+	//Set base addresses for TX and RX buffers (TX: 0x00, RX: 0xFF, unused here)
+	sx126x_set_buffer_base_address(stm32Context,0x00,0x00);
+
+
+	//Configure DIO1 to raise an interrupt on TX done
+	uint8_t irqMask  = 0x01;	// IRQ for TX done
+	uint8_t dio1Mask = 0x01;	// Map TX done to DIO1
 	uint8_t dio2Mask = 0x00;
 	uint8_t dio3Mask = 0x00;
 
-	//Set DIO 1 for
+	//Set DIO 1 for tx_done interrupt
 	sx126x_set_dio_irq_params(stm32Context, irqMask , dio1Mask, dio2Mask, dio3Mask);
-	//copy callsign to first 6 elements of fifo buffer
+
+
+	// Optional: preload call sign or header into buffer
 	sx126x_write_buffer(stm32Context,0x00,transmitter->callSign,6);
 
-
 }
-
-
-
-
-
 
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if (GPIO_Pin == GPIO_PIN_8){
-       txDone = true; //set transmission flag flag
+       txDone = true; //set transmission flag
     }
+
 }
 
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
 
 
 
-    // Re-enable SPI Receive interrupt for the next data
-	HAL_SPI_Receive_IT(&hspi1, transmitRx, sizeof(transmitRx));
-
-
-}	// Re-enable SPI Receive interrupt for the next data
+}
 
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	 // Re-enable UART Receive interrupt for the next data
-	HAL_UART_Receive_IT(&huart2, gpsBuff, sizeof(gpsBuff)); // 10 bytes or your buffer size
 
-	// Set system flag for gps sentence transmission
-	sysFlag = 10;
-
-
+	HAL_UART_Receive_IT(&huart2, gpsBuff, sizeof(gpsBuff));
 
 }
 /* USER CODE END 4 */

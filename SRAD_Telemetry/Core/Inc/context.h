@@ -20,6 +20,8 @@ typedef struct {
     uint16_t busy_pin;
     GPIO_TypeDef* reset_pin_port;
     uint16_t reset_pin;
+    GPIO_TypeDef* txDone_port;
+    uint16_t txDone_pin;
     SPI_HandleTypeDef* hspi;
 
 
@@ -34,7 +36,8 @@ typedef struct{
 	sx126x_pkt_params_lora_t pktParams;
 	sx126x_pa_cfg_params_t paParams;
 	uint8_t paPower;
-	uint8_t callSign[6];
+	uint32_t frequency;
+	uint8_t callSign[8];
 
 
 }e22trans;
