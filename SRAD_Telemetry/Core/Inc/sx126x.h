@@ -531,7 +531,7 @@ typedef struct sx126x_pkt_params_bpsk_s
                                 //!< multiple of 8
 } sx126x_pkt_params_bpsk_t;
 
-/**
+/*0
  * @brief SX126X LoRa CAD number of symbols enumeration definition
  *
  * @note Represents the number of symbols to be used for a CAD operation
