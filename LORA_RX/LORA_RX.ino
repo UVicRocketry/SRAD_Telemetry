@@ -10,46 +10,42 @@
 
 
 
-// Turns the 'PRG' button into the power button, long press is off 
-#define HELTEC_POWER_BUTTON   // must be before "#include <heltec_unofficial.h>"
+// Turns the 'PRG' button into the power button, long press is off
+#define HELTEC_POWER_BUTTON  // must be before "#include <heltec_unofficial.h>"
 #include <heltec_unofficial.h>
 
 // Pause between transmited packets in seconds.
 // Set to zero to only transmit a packet when pressing the user button
 // Will not exceed 1% duty cycle, even if you set a lower value.
-#define PAUSE               300
+#define PAUSE 300
 
 // Frequency in MHz. Keep the decimal point to designate float.
 // Check your own rules and regulations to see what is legal where you are.
-#define FREQUENCY           915.0       // for Europe
+#define FREQUENCY 915.0  // for Europe
 // #define FREQUENCY           905.2       // for US
 
 // LoRa bandwidth. Keep the decimal point to designate float.
 // Allowed values are 7.8, 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125.0, 250.0 and 500.0 kHz.
-#define BANDWIDTH           250.0
+#define BANDWIDTH 250.0
 
 // Number from 5 to 12. Higher means slower but higher "processor gain",
-// meaning (in nutshell) longer range and more robust against interference. 
-#define SPREADING_FACTOR    9
+// meaning (in nutshell) longer range and more robust against interference.
+#define SPREADING_FACTOR 12
 
-// Transmit power in dBm. 0 dBm = 1 mW, enough for tabletop-testing. This value can be
-// set anywhere between -9 dBm (0.125 mW) to 22 dBm (158 mW). Note that the maximum ERP
-// (which is what your antenna maximally radiates) on the EU ISM band is 25 mW, and that
-// transmissting without an antenna can damage your hardware.
-#define TRANSMIT_POWER      0
 
 #define SYNC_WORD 0x12
 
 #define PREAMBLE_LENGTH 12
 
+#define CODING_RATE 8
 
+String rxdata;
+char buf[42];
 volatile bool rxFlag = false;
 long counter = 0;
-uint64_t last_tx = 0;
-uint64_t tx_time;
-uint64_t minimum_pause;
-
+int payloadLength = 0;
 void setup() {
+
   heltec_setup();
   both.println("Radio init");
   RADIOLIB_OR_HALT(radio.begin());
@@ -64,31 +60,36 @@ void setup() {
   RADIOLIB_OR_HALT(radio.setSpreadingFactor(SPREADING_FACTOR));
   RADIOLIB_OR_HALT(radio.setSyncWord(SYNC_WORD));
   RADIOLIB_OR_HALT(radio.setPreambleLength(PREAMBLE_LENGTH));
-  radio.setCodingRate(5);
-  both.printf("TX power: %i dBm\n", TRANSMIT_POWER);
-  RADIOLIB_OR_HALT(radio.setOutputPower(TRANSMIT_POWER));
+  radio.setCodingRate(CODING_RATE);
+  both.printf("CR: %i\n", CODING_RATE);
   RADIOLIB_OR_HALT(radio.setCRC(0));
   // Start receiving
-  //RADIOLIB_OR_HALT(radio.startReceive(RADIOLIB_SX126X_RX_TIMEOUT_INF));
+
+  RADIOLIB_OR_HALT(radio.startReceive(RADIOLIB_SX126X_RX_TIMEOUT_NONE));
 }
 
 void loop() {
   heltec_loop();
 
   // If a packet was received, display it and the RSSI and SNR
-  //if (rxFlag) {
-    //both.printf("packet recieved");
-    String str = "";
-    //rxFlag = false;
-    //radio.getPacketLength();
-    radio.receive(str);
-    if (str != "") {
-      both.printf("RX [%s]\n", str);
+  if (rxFlag) {
+    rxFlag = false;
+    radio.readData(rxdata);
+    rxdata.toCharArray(buf, 42);
+    payloadLength = radio.getPacketLength();
+
+    if (_radiolib_status == RADIOLIB_ERR_NONE) {
+      both.printf("RX [%s]\n", rxdata.c_str());
+      for (int i = 0; i < payloadLength; i++) {
+        Serial.printf("%02X \n", buf[i]);
+      }
+
+      both.printf("  Packet Length: %d bytes\n", payloadLength);
       both.printf("  RSSI: %.2f dBm\n", radio.getRSSI());
       both.printf("  SNR: %.2f dB\n", radio.getSNR());
     }
-    //RADIOLIB_OR_HALT(radio.startReceive(RADIOLIB_SX126X_RX_TIMEOUT_INF));
-  //}
+    RADIOLIB_OR_HALT(radio.startReceive(RADIOLIB_SX126X_RX_TIMEOUT_NONE));
+  }
 }
 
 // Can't do Serial or display things here, takes too much time for the interrupt

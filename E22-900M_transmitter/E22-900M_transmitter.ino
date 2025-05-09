@@ -15,23 +15,23 @@ int transmissionState = RADIOLIB_ERR_NONE;
   int state = radio.begin();
   state = radio.setFrequency(915);
   //state = radio.setBitRate(100.0);
-  state = radio.setTCXO(1.6);
-  state = radio.setOutputPower(5);
-  radio.setBandwidth(250.0);
-  radio.setSpreadingFactor(9);
+  state = radio.setTCXO(1.8);
+  state = radio.setOutputPower(17);
+  radio.setBandwidth(250);
+  radio.setSpreadingFactor(12);
   radio.setSyncWord(0x12);
   radio.setPreambleLength(12);
-  radio.setCodingRate(5);
+  radio.setCodingRate(8);
   radio.setRfSwitchPins(PA11,PA12);
 
 
-  
 
+  
 }
 
 void loop() {
   
-  int state = radio.transmit("Hello_World");
+  int state = radio.transmit("1000000000100000000010000000001000000000");
 
 
   if (state == RADIOLIB_ERR_NONE) {
