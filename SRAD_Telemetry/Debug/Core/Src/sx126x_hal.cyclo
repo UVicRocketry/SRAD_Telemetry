@@ -1,4 +1,0 @@
-../Core/Src/sx126x_hal.c:43:21:sx126x_hal_write	2
-../Core/Src/sx126x_hal.c:81:21:sx126x_hal_read	6
-../Core/Src/sx126x_hal.c:123:21:sx126x_hal_reset	1
-../Core/Src/sx126x_hal.c:145:21:sx126x_hal_wakeup	1

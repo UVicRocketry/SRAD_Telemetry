@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -22,7 +22,6 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "usb_device.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,11 +56,9 @@
 
 /* External variables --------------------------------------------------------*/
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
-extern SPI_HandleTypeDef hspi1;
 extern UART_HandleTypeDef huart2;
 /* USER CODE BEGIN EV */
-extern uint8_t transmit_buff[82];
-extern uint16_t transmit_index;
+
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -210,24 +207,10 @@ void EXTI9_5_IRQHandler(void)
   /* USER CODE BEGIN EXTI9_5_IRQn 0 */
 
   /* USER CODE END EXTI9_5_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
+  HAL_GPIO_EXTI_IRQHandler(TX_Done_Pin);
   /* USER CODE BEGIN EXTI9_5_IRQn 1 */
 
   /* USER CODE END EXTI9_5_IRQn 1 */
-}
-
-/**
-  * @brief This function handles SPI1 global interrupt.
-  */
-void SPI1_IRQHandler(void)
-{
-  /* USER CODE BEGIN SPI1_IRQn 0 */
-
-  /* USER CODE END SPI1_IRQn 0 */
-  HAL_SPI_IRQHandler(&hspi1);
-  /* USER CODE BEGIN SPI1_IRQn 1 */
-
-  /* USER CODE END SPI1_IRQn 1 */
 }
 
 /**

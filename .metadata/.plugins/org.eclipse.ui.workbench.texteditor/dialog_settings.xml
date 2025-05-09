@@ -1,35 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
-		<item key="selection" value="set_tx"/>
+		<item key="selection" value="Printf"/>
 		<item key="wrap" value="true"/>
 		<item key="casesensitive" value="false"/>
 		<item key="wholeword" value="false"/>
 		<item key="incremental" value="false"/>
 		<item key="isRegEx" value="false"/>
 		<list key="findhistory">
-			<item value="set_tx"/>
-			<item value="set tc"/>
-			<item value="enable"/>
+			<item value="SendLine"/>
+			<item value="CDC_SendLine"/>
+			<item value="transmitter.paParams."/>
+			<item value="transmitter.paParams.pa_"/>
+			<item value="&amp;transmitter.paParams, transmitter.paPower)"/>
 			<item value="tx"/>
-			<item value="set_dio"/>
-			<item value="xta"/>
-			<item value="mod_params_lora"/>
-			<item value="mod_param"/>
-			<item value="mod"/>
-			<item value="lora"/>
-			<item value="pkt"/>
-			<item value="packet"/>
-			<item value="setpacket"/>
-			<item value="setBuffer"/>
-			<item value="setbuffer"/>
+			<item value="buffer"/>
+			<item value="SPI TIMEOUT"/>
+			<item value="hal"/>
+			<item value="clear"/>
+			<item value="base"/>
+			<item value="sync"/>
+			<item value="sync word"/>
+			<item value="bandwidth"/>
+			<item value="bw"/>
 		</list>
 		<list key="replacehistory">
+			<item value="Printf"/>
+			<item value="CDC_Printf"/>
+			<item value="transmitter-&gt;paParams-&gt;"/>
+			<item value="transmitter-&gt;paParams-&gt;pa_"/>
+			<item value="transmitter-&gt;paParams, transmitter-&gt;paPower)"/>
 		</list>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
-		<item key="DIALOG_X_ORIGIN" value="1563"/>
-		<item key="DIALOG_Y_ORIGIN" value="560"/>
+		<item key="DIALOG_X_ORIGIN" value="724"/>
+		<item key="DIALOG_Y_ORIGIN" value="246"/>
 		<item key="DIALOG_WIDTH" value="336"/>
 		<item key="DIALOG_HEIGHT" value="402"/>
 		<item key="DIALOG_FONT_NAME" value="1|.AppleSystemUIFont|11.0|0|COCOA|1|.AppleSystemUIFont"/>

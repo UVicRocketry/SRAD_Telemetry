@@ -1,0 +1,194 @@
+/*
+ * sx126x_hal.c
+ *
+ * Implementation of the sx126x_h file for the STM32
+ * platform.
+ *
+ *
+ *  Created on: Nov 20, 2024
+ *      Author: Zarina Guzman
+ */
+
+
+
+/*The SPI interface (from SX1262 Datasheet) :
+ * synchronous full-duplex
+ *  CPOL = 0
+ *  CPHA = 0
+ *  Motorola/Freescale nomenclature
+ *
+ *  An address byte followed by a data byte is sent for a write access
+ *  whereas an address byte is sent and a read byte is received for the read access.
+ *  The NSS pin goes low at the beginning of the frame and goes high after the data byte.
+ *
+ */
+
+#include "sx126x/sx126x_hal.h"
+#include "telemetry/context.h"
+#include <string.h>
+#include "usb_device.h"
+
+extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
+
+/*
+sx126x_hal_write
+Purpose: Write data to the transceiver via SPI.
+Parameters:
+Command opcode to write.
+Pointer to the data buffer.
+Length of the data.
+Implementation:
+Drive the NSS line low.
+Send the command opcode over SPI.
+Send the data buffer over SPI.
+Drive the NSS line high.
+*/
+sx126x_hal_status_t sx126x_hal_write( const void* context, const uint8_t* command, const uint16_t command_length,
+                                      const uint8_t* data, const uint16_t data_length ){
+
+    // Cast context
+    sx126x_context* ctx = (sx126x_context*)context;
+
+    //Poll the tranmsitters busy pin (active high)
+	while (HAL_GPIO_ReadPin(ctx->busy_pin_port, ctx->busy_pin) == GPIO_PIN_SET){}
+
+	// Activate chip select (active low)
+	HAL_GPIO_WritePin(ctx->chip_select_port, ctx->chip_select_pin, GPIO_PIN_RESET);
+
+	// Transmit command
+	HAL_SPI_Transmit(ctx->hspi, (uint8_t*)command, command_length, HAL_MAX_DELAY);
+
+	// send command to serial port
+	CDC_Printf("Sending...\r\n");
+	CDC_TransmitHex(command, command_length);
+
+
+	//grab the transmitters response
+	CDC_Printf("Recieving...\r\n");
+	HAL_SPI_Receive(ctx->hspi, (uint8_t*)command, command_length, HAL_MAX_DELAY);
+
+	// send command to serial port
+	CDC_TransmitHex(command, command_length);
+	// Transmit data
+	HAL_SPI_Transmit(ctx->hspi, (uint8_t*)data, data_length, HAL_MAX_DELAY);
+
+	// Deactivate chip select
+	HAL_GPIO_WritePin(ctx->chip_select_port, ctx->chip_select_pin, GPIO_PIN_SET);
+
+
+	return SX126X_HAL_STATUS_OK;
+}
+
+/*
+Purpose: Read data from the transceiver via SPI.
+Parameters:
+Command opcode to read.
+Pointer to the buffer where data will be stored.
+Length of data to read.
+Implementation:
+Drive the cs line low.
+Send the command opcode over SPI.
+Receive the requested data via SPI into the buffer.
+Drive the cs line high.
+*/
+sx126x_hal_status_t sx126x_hal_read( const void* context, const uint8_t* command, const uint16_t command_length,
+                                     uint8_t* data, const uint16_t data_length ){
+
+	// Cast context to the struct type
+	sx126x_context* ctx = (sx126x_context*)context;
+
+	// Activate chip select (active low)
+	while (HAL_GPIO_ReadPin(ctx->busy_pin_port, ctx->busy_pin) == GPIO_PIN_SET){}
+
+    HAL_GPIO_WritePin(ctx->chip_select_port, ctx->chip_select_pin, GPIO_PIN_RESET);
+
+	// Transmit command
+	HAL_SPI_Transmit(ctx->hspi, (uint8_t*)command, command_length, 1000);
+
+    // Receive data from SX126x
+    HAL_SPI_Receive(ctx->hspi, data, data_length, 1000);
+
+    // Deactivate chip select (active high)
+    HAL_GPIO_WritePin(ctx->chip_select_port, ctx->chip_select_pin, GPIO_PIN_SET);
+
+    return SX126X_HAL_STATUS_OK;
+
+}
+/*
+sx126x_hal_reset
+Purpose: Resets the SX126X transceiver.
+Implementation: Toggle the reset GPIO pin connected to the transceiver.
+Operation:
+Set the reset pin low.
+Wait at least 100 microseconds (according to the SX126X datasheet).
+Set the reset pin high.
+ */
+sx126x_hal_status_t sx126x_hal_reset( const void* context ){
+	// Cast context to the actual type
+	sx126x_context* ctx = (sx126x_context*)context;
+
+	HAL_GPIO_WritePin(ctx->reset_pin_port, ctx->reset_pin, GPIO_PIN_RESET);  // Reset pin (optional) active low
+	HAL_Delay(101);  // Wait for reset to complete
+	HAL_GPIO_WritePin(ctx->reset_pin_port, ctx->reset_pin, GPIO_PIN_SET);  // Release reset pin
+
+	return SX126X_HAL_STATUS_OK;
+}
+
+/*
+sx126x_hal_wakeup
+Purpose: Wakes the transceiver from sleep mode.
+Implementation: Perform a simple SPI transaction or toggle GPIOs based on the datasheet instructions.
+Operation:
+Drive the NSS (chip select) line low.
+Perform a no-op SPI transaction to generate a clock signal.
+Drive the NSS line high.
+Wait for the busy pin to indicate readiness.
+ */
+
+sx126x_hal_status_t sx126x_hal_wakeup( const void* context ){
+	sx126x_context* ctx = (sx126x_context*)context;
+    // Step 1: Pull Chip Select (CS) Low
+    HAL_GPIO_WritePin(ctx->chip_select_port, ctx->chip_select_pin, GPIO_PIN_RESET);
+
+    // Step 2: Send a NOP command (0x00) over SPI
+    uint8_t nop_cmd = 0x00;
+
+    HAL_SPI_Transmit(ctx->hspi, &nop_cmd, 1, HAL_MAX_DELAY);
+
+    HAL_Delay(3500);
+
+    // Step 4: Pull Chip Select (CS) High
+    HAL_GPIO_WritePin(ctx->chip_select_port, ctx->chip_select_pin, GPIO_PIN_SET);
+
+
+
+	return SX126X_HAL_STATUS_OK;
+}
+
+static void CDC_TransmitHex(const uint8_t* buf, uint16_t length)
+{
+    // each byte → “XX ” (3 chars) plus “\r\n” at the end
+    char hexbuf[3 * length + 2];
+    uint16_t idx = 0;
+
+    for (uint16_t i = 0; i < length; i++) {
+        // append “%02X ”
+        idx += snprintf(hexbuf + idx,
+                        sizeof(hexbuf) - idx,
+                        "%02X ",
+                        buf[i]);
+    }
+
+    // overwrite trailing space with CRLF
+    if (idx >= 1) {
+        hexbuf[idx - 1] = '\r';  // replace last space
+        hexbuf[idx++]   = '\n';
+    } else {
+        // no data? just send CRLF
+        hexbuf[idx++] = '\r';
+        hexbuf[idx++] = '\n';
+    }
+
+    // fire it off
+    CDC_Transmit_FS((uint8_t*)hexbuf, idx);
+}

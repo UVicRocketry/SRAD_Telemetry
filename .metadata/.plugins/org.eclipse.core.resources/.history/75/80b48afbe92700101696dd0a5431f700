@@ -1,0 +1,49 @@
+/*
+ * context.h
+ *
+ *  Created on: Dec 26, 2024
+ *      Author: Zarina
+ */
+
+#ifndef INC_CONTEXT_H_
+#define INC_CONTEXT_H_
+
+#include "sx126x/sx126x.h"
+
+
+
+typedef struct {
+
+    GPIO_TypeDef* chip_select_port;
+    uint16_t chip_select_pin;
+    GPIO_TypeDef* busy_pin_port;
+    uint16_t busy_pin;
+    GPIO_TypeDef* reset_pin_port;
+    uint16_t reset_pin;
+    GPIO_TypeDef* txDone_port;
+    uint16_t txDone_pin;
+    SPI_HandleTypeDef* hspi;
+
+
+} sx126x_context;
+
+
+
+typedef struct{
+
+	sx126x_context hardwareConfig;
+	sx126x_mod_params_lora_t loraParams;
+	sx126x_pkt_params_lora_t pktParams;
+	sx126x_pa_cfg_params_t paParams;
+	uint8_t paPower;
+	uint32_t frequency;
+	uint8_t callSign[8];
+
+
+}e22trans;
+
+
+
+
+
+#endif /* INC_CONTEXT_H_ */
