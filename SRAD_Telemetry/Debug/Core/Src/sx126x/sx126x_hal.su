@@ -1,0 +1,5 @@
+../Core/Src/sx126x/sx126x_hal.c:46:21:sx126x_hal_write	32	static
+../Core/Src/sx126x/sx126x_hal.c:94:21:sx126x_hal_read	32	static
+../Core/Src/sx126x/sx126x_hal.c:126:21:sx126x_hal_reset	24	static
+../Core/Src/sx126x/sx126x_hal.c:148:21:sx126x_hal_wakeup	24	static
+../Core/Src/sx126x/sx126x_hal.c:168:13:CDC_TransmitHex	56	dynamic

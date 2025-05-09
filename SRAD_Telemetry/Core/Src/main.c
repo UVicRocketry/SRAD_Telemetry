@@ -22,19 +22,19 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdarg.h>
 
 
-#include "lr_fhss_mac.h"
-#include "lr_fhss_v1_base_types.h"
-#include "lr_fhss_mac.h"
-#include "sx126x_driver_version.h"
-#include "sx126x_hal.h"
-#include "sx126x_lr_fhss.h"
-#include "sx126x_regs.h"
-#include "sx126x.h"
-#include "context.h"
-
+//transmitter inludes
+#include "sx126x/lr_fhss_mac.h"
+#include "sx126x/lr_fhss_v1_base_types.h"
+#include "sx126x/lr_fhss_mac.h"
+#include "sx126x/sx126x_driver_version.h"
+#include "sx126x/sx126x_hal.h"
+#include "sx126x/sx126x_lr_fhss.h"
+#include "sx126x/sx126x_regs.h"
+#include "sx126x/sx126x.h"
+#include "telemetry/context.h"
+#include "usbd_cdc_if.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,7 +44,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define DEBUG_BUFFER_SIZE 128
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -67,38 +66,25 @@ static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
-
 void sx126x_init(e22trans *transmitter);
+void USB_CDC_RxHandler(uint8_t* Buf, uint32_t Len);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+
+//USB virtual commm variables
 extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
 
 
 
-uint8_t gpsBuff[82];
-uint8_t txDone = 0;
 
+uint8_t fcBuff[82];		//Flight computer RX buffer
+uint8_t gpsBuff[82];	//Gps Module RX Buffer
+uint8_t txDone = 0; 	//Transmitter Transmit intterupt flag
+uint8_t command=0;
 
-
-
-// This function takes a C-string, calculates its length, and sends it via CDC
-void debugPrintf(const char* format, ...) {
-
-
-	static char debugBuffer[DEBUG_BUFFER_SIZE];
-    va_list args;
-    va_start(args, format);
-
-    // vsnprintf writes to debugBuffer, up to its size, including null terminator
-    vsnprintf(debugBuffer, DEBUG_BUFFER_SIZE, format, args);
-
-    va_end(args);
-
-    // Now send the buffer over USB CDC
-    CDC_Transmit_FS((uint8_t*)debugBuffer, (uint16_t)strlen(debugBuffer));
-}
 
 /* USER CODE END 0 */
 
@@ -111,45 +97,41 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 //e22 stm32 context and param struct
- e22trans transmitter = {
-
-	//Hardware context
-	 {GPIOA, 			// Chip select port
-	  GPIO_PIN_15,		// Chip select pin
-	  GPIOB, 			// Busy pin port
-	  GPIO_PIN_6, 		// Busy pin
-	  GPIOB,			// Reset pin port
-	  GPIO_PIN_7, 		// Reset pin
-	  GPIOB,			// TxDone Port
-	  GPIO_PIN_8,		// TxDone Pin
-	  &hspi1}, 			// SPI handler
-
-	//Lora params
-	 {SX126X_LORA_SF12,   // Spreading Factor
-	  SX126X_LORA_BW_125, // Bandwidth
-	  SX126X_LORA_CR_4_8, // Coding Rate
-	  0x00},			  // Low data rate optimize
-
-	 //lora packet params
-	 {12,    			// Preamble length in bits
-	  0x00,    		    // Header type
-	  7,				// Payload Length in bytes
-	  0,   			    // Crc type
-	  0},				// Invert IQ
-
-
-	//Power Amplifier params
-	 {0x04, 			// Pa_duty_cycle;
-	  0x01, 			// Hp_max;
-	  0x00, 			// Device_sel;
-	  0x01}, 			// Pa_lut;*/
-
-	//Misc
-	  3,				// Output power in dbm
-	  915000000,		// Frequency
-	  "VA7GLW",         // Callsign
- };
-
+	e22trans transmitter = {
+	  .hardwareConfig = {
+	    .chip_select_port = GPIOA,        // Chip select pin port
+	    .chip_select_pin  = GPIO_PIN_15,  // Chip select pin number
+	    .busy_pin_port    = GPIOB,        // Busy signal pin port
+	    .busy_pin         = GPIO_PIN_6,   // Busy signal pin number
+	    .reset_pin_port   = GPIOB,        // Reset line pin port
+	    .reset_pin        = GPIO_PIN_7,   // Reset line pin number
+	    .txDone_port      = GPIOB,        // TxDone interrupt pin port
+	    .txDone_pin       = GPIO_PIN_8,   // TxDone interrupt pin number
+	    .hspi             = &hspi1,       // Pointer to SPI handle
+	  },
+	  .loraParams = {
+	    .sf   			 = SX126X_LORA_SF12,   // LoRa spreading factor
+	    .bw          	 = SX126X_LORA_BW_250, // LoRa bandwidth (250 kHz)
+	    .cr         	 = SX126X_LORA_CR_4_8, // LoRa coding rate (4/8)
+	    .ldro = 0x00,              			   // Low data rate optimization disabled
+	  },
+	  .pktParams = {
+	    .preamble_len_in_symb 	= 12,    // Preamble length (bits)
+	    .header_type         	= 0x00,  // Explicit header mode
+	    .pld_len_in_bytes 		= 11,    // Payload length (bytes)
+	    .crc_is_on           	= 0,     // CRC disabled
+	    .invert_iq_is_on        = 0,     // Normal IQ (not inverted)
+	  },
+	  .paParams = {
+	    .pa_duty_cycle  = 0x04, // PA duty cycle setting
+	    .hp_max			= 0x01, // High-power maximum setting
+	    .hp_max   		= 0x00, // PA selector (PA_BOOST)
+	    .pa_lut      	= 0x01, // PA lookup table index
+	  },
+	  .paPower   = 3,            // TX output power in dBm
+	  .frequency = 915000000U,   // Carrier frequency in Hz
+	  .callSign  = "VA7GLW",     // Null-terminated callsign (max 7 chars)
+	};
 
   /* USER CODE END 1 */
 
@@ -171,9 +153,9 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USB_DEVICE_Init();
   MX_USART2_UART_Init();
   MX_SPI1_Init();
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
   HAL_UART_Receive_IT(&huart2, gpsBuff, sizeof(gpsBuff));
@@ -182,30 +164,17 @@ int main(void)
   sx126x_init(&transmitter);
 
 
-  uint8_t msg[11] = "-123456789";
-  uint8_t transmitterRx[20];
 
-
+// prime the USB‑CDC receive pipeline
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  CDC_Transmit_FS((uint8_t *)"Ready for command...",20);
+
   while (1)
   {
-
-
-
-	  debugPrintf("Writing to Buffer :...\r\n\n\n");
-	  sx126x_write_buffer(&transmitter, 6 , msg, 10);
-	  HAL_Delay(1000);
-
-	  sx126x_read_buffer(&transmitter, 0, transmitterRx, 17);
-	  debugPrintf("Buffer: %s \r\n\n\n",transmitterRx);
-	  sx126x_clear_irq_status( &transmitter, 0x01);
-	  //sx126x_set_tx(&transmitter, 1000);
-	  HAL_Delay(1000);
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -283,7 +252,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -349,36 +318,36 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(Chip_Select_GPIO_Port, Chip_Select_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(Reset_Pin_GPIO_Port, Reset_Pin_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PA15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_15;
+  /*Configure GPIO pin : Chip_Select_Pin */
+  GPIO_InitStruct.Pin = Chip_Select_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(Chip_Select_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB6 */
-  GPIO_InitStruct.Pin = GPIO_PIN_6;
+  /*Configure GPIO pin : Busy_Pin_Pin */
+  GPIO_InitStruct.Pin = Busy_Pin_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(Busy_Pin_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  /*Configure GPIO pin : Reset_Pin_Pin */
+  GPIO_InitStruct.Pin = Reset_Pin_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(Reset_Pin_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB8 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8;
+  /*Configure GPIO pin : TX_Done_Pin */
+  GPIO_InitStruct.Pin = TX_Done_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(TX_Done_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
@@ -422,15 +391,17 @@ void sx126x_init(e22trans *transmitter){
 
 	//Configures DIO3 to supply power to an external TCXO (Temperature Compensated Crystal Oscillator)
 	//Output 1.8V as stated in E22 datasheet, could be 3.3V as shown in their screen capture.
-	sx126x_set_dio3_as_tcxo_ctrl(stm32Context,SX126X_TCXO_CTRL_3_3V ,320);
+	sx126x_set_dio3_as_tcxo_ctrl(stm32Context,SX126X_TCXO_CTRL_1_8V ,320);
 
 	//Calibrate all blocks (mask 0xFF enables full calibration: ADC, PLL, etc.)
 	sx126x_cal(stm32Context,0xFF);
 
-	//Set regulator mode to use DC-DC for power saving
-	sx126x_set_reg_mode(stm32Context,SX126X_REG_MODE_LDO);
+	sx126x_set_standby(stm32Context,SX126X_STANDBY_CFG_XOSC);
 
-	//Set packet type to LoRa (alternatively FSK)
+	//Set regulator mode to use DC-DC for power saving
+	sx126x_set_reg_mode(stm32Context,SX126X_REG_MODE_DCDC);
+
+	//Set packet type to LoRa
 	sx126x_set_pkt_type(stm32Context,SX126X_PKT_TYPE_LORA );
 
 	//Configure LoRa modulation parameters (e.g., spreading factor, bandwidth, coding rate)
@@ -448,8 +419,8 @@ void sx126x_init(e22trans *transmitter){
 	//Configure PA (Power Amplifier) parameters (e.g., PA duty cycle, HP/LP selection)
 	sx126x_set_pa_cfg(stm32Context, &transmitter->paParams);
 
-	//Set TX output power and ramp time (PWR_DBM is a predefined dBm value, ramp in 40 µs)
-	sx126x_set_tx_params(stm32Context,transmitter->paPower,SX126X_RAMP_40_US);
+	//Set TX output power and ramp time
+	sx126x_set_tx_params(stm32Context,transmitter->paPower,SX126X_RAMP_200_US);
 
 	//Set base addresses for TX and RX buffers (TX: 0x00, RX: 0xFF, unused here)
 	sx126x_set_buffer_base_address(stm32Context,0x00,0x00);
@@ -470,6 +441,22 @@ void sx126x_init(e22trans *transmitter){
 
 }
 
+// dispatch inside your main “while (line_ready)” loop
+// Dispatch inside your main "while(line_ready)" loop
+// 'transmitter' is a pointer to your e22trans instance
+typedef enum {
+    CMD_TX,
+    CMD_UNKNOWN
+} cmd_t;
+
+
+
+void USB_CDC_RxHandler(uint8_t* Buf, uint32_t Len)
+{
+    CDC_Transmit_FS(Buf, Len);
+}
+
+
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
@@ -479,19 +466,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 }
 
-void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
 
 
-
-}
-
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-
-	HAL_UART_Receive_IT(&huart2, gpsBuff, sizeof(gpsBuff));
-
-}
 /* USER CODE END 4 */
 
 /**

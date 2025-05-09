@@ -56,9 +56,18 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define Chip_Select_Pin GPIO_PIN_15
+#define Chip_Select_GPIO_Port GPIOA
+#define Busy_Pin_Pin GPIO_PIN_6
+#define Busy_Pin_GPIO_Port GPIOB
+#define Reset_Pin_Pin GPIO_PIN_7
+#define Reset_Pin_GPIO_Port GPIOB
+#define TX_Done_Pin GPIO_PIN_8
+#define TX_Done_GPIO_Port GPIOB
+#define TX_Done_EXTI_IRQn EXTI9_5_IRQn
 
 /* USER CODE BEGIN Private defines */
-
+void USB_CDC_RxHandler(uint8_t*, uint32_t);
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
