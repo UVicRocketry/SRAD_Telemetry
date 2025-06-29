@@ -18,10 +18,10 @@ int transmissionState = RADIOLIB_ERR_NONE;
   state = radio.setTCXO(1.8);
   state = radio.setOutputPower(17);
   radio.setBandwidth(250);
-  radio.setSpreadingFactor(12);
+  radio.setSpreadingFactor(9);
   radio.setSyncWord(0x12);
   radio.setPreambleLength(12);
-  radio.setCodingRate(8);
+  radio.setCodingRate(5);
   radio.setRfSwitchPins(PA11,PA12);
 
 
