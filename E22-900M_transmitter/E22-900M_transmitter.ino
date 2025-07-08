@@ -1,24 +1,3 @@
-
-  void setup() {
-  Serial.begin(9600);
-
-  Serial.print(F("[SX1262] Initializing ... "));
-  spi.begin();
-  int state = radio.begin();
-  state = radio.setFrequency(915);
-  //state = radio.setBitRate(100.0);
-  state = radio.setTCXO(1.8);
-  state = radio.setOutputPower(17);
-  radio.setBandwidth(250);
-  radio.setSpreadingFactor(12);
-  radio.setSyncWord(0x12);
-  radio.setPreambleLength(12);
-  radio.setCodingRate(8);
-  radio.setRfSwitchPins(PA11,PA12);
-
-
-
-  
 #include <SRAD_config.h>
 #include <HardwareSerial.h>
 #include <Adafruit_GPS.h>
