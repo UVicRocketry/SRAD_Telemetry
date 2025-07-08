@@ -1,12 +1,3 @@
-#include <RadioLib.h>
-<<<<<<< Updated upstream
-
-
-
-SPIClass spi(PB5, PB4, PB3);
-SPISettings spiSettings(1000000, MSBFIRST, SPI_MODE0);
-SX1262 radio = new Module(PA15, PB8, PB7, PB6, spi, spiSettings);
-int transmissionState = RADIOLIB_ERR_NONE;
 
   void setup() {
   Serial.begin(9600);
@@ -28,27 +19,6 @@ int transmissionState = RADIOLIB_ERR_NONE;
 
 
   
-}
-
-void loop() {
-  
-  int state = radio.transmit("1000000000100000000010000000001000000000");
-
-
-  if (state == RADIOLIB_ERR_NONE) {
-    // the packet was successfully transmitted
-    Serial.println(F("success!"));
-  }
-  else {
-    // some other error occurred
-    Serial.print(F("failed, code "));
-    Serial.println(state);
-  }
-  
-  delay(2000);
-  // put your main code here, to run repeatedly:
-
-=======
 #include <SRAD_config.h>
 #include <HardwareSerial.h>
 #include <Adafruit_GPS.h>
@@ -56,16 +26,14 @@ void loop() {
 #define USB_Serial Serial
 #define GPS_Serial Serial1
 
+//Set up SPI for transmitter
+SPIClass spi(MOSI, MISO, SCK);
+SPISettings spiSettings(1000000, MSBFIRST, SPI_MODE0);
+SX1262 radio = new Module(NSS, TX_DONE, TRESET, BUSY, spi, spiSettings);
+int transmissionState = RADIOLIB_ERR_NONE;
+volatile bool transmittedFlag = false;
 
-
-
-  //Set up SPI for transmitter
-  SPIClass spi(MOSI, MISO, SCK);
-  SPISettings spiSettings(1000000, MSBFIRST, SPI_MODE0);
-  SX1262 radio = new Module(NSS, TX_DONE, TRESET, BUSY, spi, spiSettings);
-  int transmissionState = RADIOLIB_ERR_NONE;
-  volatile bool transmittedFlag = false;
-
+ 
   
 void setup() {
 
@@ -78,8 +46,6 @@ void setup() {
 
   transmitter_init();
 
- 
->>>>>>> Stashed changes
 }
 
 
