@@ -87,11 +87,11 @@ void transmitter_init(){
   USB_Serial.println(state);
 
   USB_Serial.println("Set Frequency:");
-  state = radio.setFrequency(915);
+  state = radio.setFrequency(TX_FREQ);
   USB_Serial.println(state);
+
   
   USB_Serial.println("Set TCXO:");
-  // //state = radio.setBitRate(100.0);
   state = radio.setTCXO(TX_TCXO);
   USB_Serial.println(state);
 
