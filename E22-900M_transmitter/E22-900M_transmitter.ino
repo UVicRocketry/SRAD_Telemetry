@@ -9,7 +9,7 @@
 
 SPIClass spi(MOSI, MISO, SCK);
 SPISettings spiSettings(1000000, MSBFIRST, SPI_MODE0);
-SX1262 radio = new Module(CS, TX_DONE, TRESET, BUSY, spi, spiSettings);
+SX1262 radio = new Module(NSS, TX_DONE, TRESET, BUSY, spi, spiSettings);
 int transmissionState = RADIOLIB_ERR_NONE;
 Adafruit_NeoPixel pixels(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
