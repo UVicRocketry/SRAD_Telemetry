@@ -13,22 +13,23 @@
 #define CS   PA15
 
 //Transmitter control pins
-#define TX_EN PA12      // Set high
-#define RX_EN PA11      // Set low
+#define TX_EN PA8     ```
+#define RX_EN PA15     
 
 //Transmitter parameters
 #define TX_POWER           5   // dBm
 #define TX_FREQ          915   // MHz   
 #define TX_TCXO          1.8   // V
 #define TX_BW            250   // Hz
-#define TX_SF              9   // Spreading factor
+#define TX_SF             12   // Spreading factor
+#define TX_CR              8   // Coding rate
 #define SYNC_WORD       0x12   // Sync word for LoRa
 #define PREAMBLE_LENGTH   12   // Preamble length for LoRa
 
 
 //UART - for GPS
-#define GPS_TX PA9
-#define GPS_RX PA10
+#define GPS_TX PB12
+#define GPS_RX PB13
 
 //UART - for flight computer
 #define FC_TX PA2

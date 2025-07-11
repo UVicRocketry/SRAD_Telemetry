@@ -1,50 +1,200 @@
 #include <RadioLib.h>
+#include <SRAD_config.h>
+#include <Adafruit_NeoPixel.h>
+#include <SoftwareSerial.h>
+#include <Adafruit_GPS.h>
+
+#define USB_Serial Serial
 
 
-
-SPIClass spi(PB5, PB4, PB3);
+SPIClass spi(MOSI, MISO, SCK);
 SPISettings spiSettings(1000000, MSBFIRST, SPI_MODE0);
-SX1262 radio = new Module(PA15, PB8, PB7, PB6, spi, spiSettings);
+SX1262 radio = new Module(CS, TX_DONE, TRESET, BUSY, spi, spiSettings);
 int transmissionState = RADIOLIB_ERR_NONE;
+Adafruit_NeoPixel pixels(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-  void setup() {
-  Serial.begin(9600);
+SoftwareSerial GPS_Serial(GPS_RX, GPS_TX);
 
-  Serial.print(F("[SX1262] Initializing ... "));
+telemetry_data_t data;
+int prev_second = 0;
+
+void setup() {
+
+  USB_Serial.begin(9600);
+  while(!USB_Serial); 
+  GPS_Serial.begin(9600);
+
   spi.begin();
-  int state = radio.begin();
-  state = radio.setFrequency(915);
-  //state = radio.setBitRate(100.0);
-  state = radio.setTCXO(1.8);
-  state = radio.setOutputPower(17);
-  radio.setBandwidth(250);
-  radio.setSpreadingFactor(9);
-  radio.setSyncWord(0x12);
-  radio.setPreambleLength(12);
-  radio.setCodingRate(5);
-  radio.setRfSwitchPins(PA11,PA12);
+  transmitter_init();
+  pixels.begin();
 
-
-
+  data.callsign = CALL_SIGN;
   
 }
 
 void loop() {
   
-  int state = radio.transmit("1000000000100000000010000000001000000000");
-
-
-  if (state == RADIOLIB_ERR_NONE) {
-    // the packet was successfully transmitted
-    Serial.println(F("success!"));
-  }
-  else {
-    // some other error occurred
-    Serial.print(F("failed, code "));
-    Serial.println(state);
-  }
+  String gps_sentence = readGPSSentence();
+  gpsParse(gps_sentence,&data);
   
-  delay(2000);
-  // put your main code here, to run repeatedly:
+  if(data.gpsData.fix > 0){
+    String payload = serializeTelemetry(data);
+    int current_second = data.gpsData.UTCtime.toInt();
+   
+    pixels.setPixelColor(0, pixels.Color(0, 0, 150));
+    pixels.show();
+    if(current_second != prev_second){
+      if((current_second % 2) == 0){
+        USB_Serial.println(payload);
+        transmissionState = radio.startTransmit(payload);
+        radio.transmit(payload);
+        pixels.setPixelColor(0, pixels.Color(0, 150, 0));
+        pixels.show();
 
+      }
+      prev_second = current_second;
+    }
+  }
+
+  else{
+    pixels.setPixelColor(0, pixels.Color(150, 0, 0));
+    pixels.show();
+  }
+
+}
+
+String readGPSSentence() {
+
+ String line = GPS_Serial.readStringUntil('\n');
+ return line;
+
+}
+
+int gpsParse(const String& gps_sentence, telemetry_data_t* data) {
+
+  // 1) Copy into a mutable buffer
+  int bufSize = gps_sentence.length() + 1;
+  char buf[bufSize];
+  gps_sentence.toCharArray(buf, bufSize);
+
+  // 2) Check header
+  char* token = strtok(buf, ",");
+  if (!token || strcmp(token, "$GPGGA") != 0) {
+    return 0;
+  }
+
+  // 3) UTC time
+  token = strtok(nullptr, ".");
+  if (!token) return 0;
+  data->gpsData.UTCtime = String(token);
+  strtok(nullptr, ",");
+  // 4) Latitude
+  token = strtok(nullptr, ",");
+  if (!token) return 0;
+  data->gpsData.lat = String(token);
+  // hemisphere
+  token = strtok(nullptr, ",");
+  if (!token) return 0;
+  data->gpsData.lat += token;
+  
+
+  // 5) Longitude
+  token = strtok(nullptr, ",");
+  if (!token) return 0;
+  data->gpsData.lon = String(token);
+  // hemisphere
+  token = strtok(nullptr, ",");
+  if (!token) return 0;
+  data->gpsData.lon += token;
+  
+
+  // 6) Fix quality
+  token = strtok(nullptr, ",");
+  if (!token) return 0;
+  data->gpsData.fix = (uint8_t)atoi(token);
+
+  // 7) Skip sats & HDOP
+  strtok(nullptr, ",");
+  strtok(nullptr, ",");
+
+  // 8) Altitude
+  token = strtok(nullptr, ",");
+  if (!token) return 0;
+  data->gpsData.alt = String(token);
+
+
+  return 1;
+}
+
+String serializeTelemetry(const telemetry_data_t& t) {
+  // Optional: pre-allocate to avoid repeated reallocations
+  String out;
+  out.reserve(
+    t.callsign.length() +
+    t.gpsData.UTCtime.length() +
+    t.gpsData.lat.length() +
+    t.gpsData.lon.length() +
+    5 +  // enough for fix (max “255,”)
+    t.gpsData.alt.length() +
+    t.fcData.length() +
+    6    // commas
+  );
+
+  out  = t.callsign;
+  out += ',';  
+  out += t.gpsData.UTCtime;
+  out += ',';
+  out += t.gpsData.lat;
+  out += ',';
+  out += t.gpsData.lon;
+  out += ',';
+  out += t.gpsData.alt;
+  out += ',';
+  out += t.fcData;
+
+  return out;
+}
+
+
+void transmitter_init(){
+
+  USB_Serial.println("[SX1262] Initializing ... ");
+  int state = radio.begin();
+  USB_Serial.println(state);
+
+  USB_Serial.println("Set Frequency:");
+  state = radio.setFrequency(915);
+  USB_Serial.println(state);
+  
+  USB_Serial.println("Set TCXO:");
+  // //state = radio.setBitRate(100.0);
+  state = radio.setTCXO(TX_TCXO);
+  USB_Serial.println(state);
+
+  USB_Serial.println("Set Output Power: ");
+  state = radio.setOutputPower(TX_POWER);
+  USB_Serial.println(state);
+  
+  USB_Serial.println("Set Bandwidth: ");
+  state = radio.setBandwidth(TX_BW);
+  USB_Serial.println(state);
+
+  USB_Serial.println("Set Spreading Factor: ");
+  state = radio.setSpreadingFactor(TX_SF);
+  USB_Serial.println(state);
+
+  USB_Serial.println("Set Sync Word: ");
+  state = radio.setSyncWord(SYNC_WORD);
+  USB_Serial.println(state);
+
+  USB_Serial.println("Set Preamble Length: ");
+  state = radio.setPreambleLength(PREAMBLE_LENGTH);
+  USB_Serial.println(state);
+
+  USB_Serial.println("Set Coding Rate: ");
+  state = radio.setCodingRate(TX_CR);
+  USB_Serial.println(state);
+  
+  
+  radio.setRfSwitchPins(RX_EN,TX_EN);
 }
