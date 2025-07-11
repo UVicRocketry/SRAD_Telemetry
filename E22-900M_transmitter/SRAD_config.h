@@ -57,8 +57,8 @@ typedef struct {
 
 
 //UART - for GPS
-#define GPS_TX PB12
-#define GPS_RX PB13
+#define GPS_TX PB13
+#define GPS_RX PB12
 
 //UART - for flight computer
 #define FC_TX PA2
