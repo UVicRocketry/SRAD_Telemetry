@@ -1,6 +1,6 @@
 #ifndef CONFIG_H
 
-#define CALL_SIGN "VE7GLW"
+#define CALL_SIGN "VE7DAS"
 
 // Your typedefs
 typedef struct {
@@ -43,12 +43,12 @@ typedef struct {
 
 
 //Transmitter parameters
-#define TX_POWER           5   // dBm
+#define TX_POWER           22   // dBm
 #define TX_FREQ          915   // MHz   
 #define TX_TCXO          1.8   // V
-#define TX_BW            250   // Hz
-#define TX_SF             12   // Spreading factor
-#define TX_CR              8   // Coding rate
+#define TX_BW            250   // kHz
+#define TX_SF             9   // Spreading factor
+#define TX_CR              5   // Coding rate
 #define SYNC_WORD       0x12   // Sync word for LoRa
 #define PREAMBLE_LENGTH   12   // Preamble length for LoRa
 #define TX_CRC			   5   // Coding Rate

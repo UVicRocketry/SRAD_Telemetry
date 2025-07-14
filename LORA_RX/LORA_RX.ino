@@ -30,14 +30,14 @@
 
 // Number from 5 to 12. Higher means slower but higher "processor gain",
 // meaning (in nutshell) longer range and more robust against interference.
-#define SPREADING_FACTOR 12
+#define SPREADING_FACTOR 9
 
 
 #define SYNC_WORD 0x12
 
 #define PREAMBLE_LENGTH 12
 
-#define CODING_RATE 8
+#define CODING_RATE 5
 
 String rxdata;
 char buf[42];
@@ -80,9 +80,9 @@ void loop() {
 
     if (_radiolib_status == RADIOLIB_ERR_NONE) {
       both.printf("RX [%s]\n", rxdata.c_str());
-      for (int i = 0; i < payloadLength; i++) {
+      /*for (int i = 0; i < payloadLength; i++) {
         Serial.printf("%02X \n", buf[i]);
-      }
+      }*/
 
       both.printf("  Packet Length: %d bytes\n", payloadLength);
       both.printf("  RSSI: %.2f dBm\n", radio.getRSSI());
