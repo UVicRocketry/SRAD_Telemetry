@@ -2,19 +2,28 @@
 
 #define CALL_SIGN "VE7GLW"
 
+#define SET_LED_BLUE       pixels.setPixelColor(0, pixels.Color(0, 0, 150)); \
+                           pixels.show();
+#define INPUT_TIMEOUT_MS  5000;
+
+
 // Your typedefs
 typedef struct {
+
+  String status;
   String UTCtime;
   String lat;
   String lon;
   uint8_t fix;
   String alt;
+
 } gps_data_t;
 
 typedef struct {
   String callsign;
   gps_data_t gpsData;
-  String fcData;
+  String gpsBuff;
+  String fcBuff;
 } telemetry_data_t;
 
 
@@ -47,11 +56,10 @@ typedef struct {
 #define TX_FREQ          915   // MHz   
 #define TX_TCXO          1.8   // V
 #define TX_BW            250   // Hz
-#define TX_SF             12   // Spreading factor
+#define TX_SF              9   // Spreading factor
 #define TX_CR              8   // Coding rate
 #define SYNC_WORD       0x12   // Sync word for LoRa
 #define PREAMBLE_LENGTH   12   // Preamble length for LoRa
-#define TX_CRC			   5   // Coding Rate
 #define TX_CRC             0   // Enable CRC
 #define TX_CODING_RATE     5   // Coding rate for LoRa (4/5)
 
