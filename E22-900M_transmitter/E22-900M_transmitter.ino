@@ -2,7 +2,7 @@
 #include <SRAD_config.h>
 #include <Adafruit_NeoPixel.h>
 #include <SoftwareSerial.h>
-#include <Adafruit_GPS.h>
+#include <pitches.h>
 
 #define USB_Serial Serial
 
@@ -18,41 +18,70 @@ SoftwareSerial FC_Serial(FC_RX, FC_TX);
 
 telemetry_data_t data;
 int prev_second = 0;
+int melody[] = {BUZZER_MELODY};
+int durations[] = {BUZZER_DURATIONS};
+String payload = "Waiting for first GPS Lock";
 
 void setup() {
 
-  USB_Serial.begin(9600);
+  USB_Serial.begin(115200);
   GPS_Serial.begin(9600);
+  //FC_Serial.begin(9600);
 
   spi.begin();
 
   transmitter_init();
   pixels.begin();
+  pixels.setBrightness(5);
 
   data.callsign = CALL_SIGN;
-  
+
+
+  pinMode(BUZZER_PIN, OUTPUT);
+  int size = sizeof(durations) / sizeof(int);
+
+  // for (int note = 0; note < size; note++) {
+  //   //to calculate the note duration, take one second divided by the note type.
+  //   //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+  //   int duration = (TEMPO * 4) / durations[note];
+  //   tone(BUZZER_PIN, melody[note], duration);
+
+  //   //to distinguish the notes, set a minimum time between them.
+  //   //the note's duration + 30% seems to work well:
+  //   int pauseBetweenNotes = duration * 1.30;
+  //   delay(pauseBetweenNotes);
+
+  //   //stop the tone playing:
+  //   noTone(BUZZER_PIN);
+  // }
   
 }
 
 void loop() {
-
+  
   //Read & parse GPS Data
   data.gpsBuff = readGPSSentence();
+  //data.fcBuff = readFCData();
+
+  // parse parse parse
   gpsParse(data.gpsBuff, &data);
-  String payload = serializeTelemetry(data); //Serialize data to transmit
+  payload = serializeTelemetry(data); //Serialize data to transmit
 
   //Check for GPS lock
-  if(!data.gpsData.status.equals("V")){
-    SET_LED_BLUE
+  if(data.gpsData.status.equals("A")){
+    SET_LED_BLUE;
+  }
+  else{
+    SET_LED_YELLOW;
   }
   
-  
+
+ 
   //Transmit on every odd second
   int current_second = data.gpsData.UTCtime.toInt();
   if(current_second != prev_second && (current_second % 2) == 1){
       USB_Serial.println(payload);
       transmissionState = radio.startTransmit(payload);
-      radio.transmit(payload);
       prev_second = current_second;
   }
 
@@ -60,12 +89,20 @@ void loop() {
 
 String readGPSSentence() {
 
- String line = GPS_Serial.readStringUntil('\n');
- return line;
-
+  if (GPS_Serial.available()) {
+    return GPS_Serial.readStringUntil('\n');
+  } else {
+    return ""; 
+  }
 }
+
 String readFCData(){
 
+  if (FC_Serial.available()) {
+    return FC_Serial.readStringUntil('\n');
+  } else {
+    return ""; 
+  }
 }
 
 int gpsParse(const String gps_sentence, telemetry_data_t* data) {
@@ -79,14 +116,17 @@ int gpsParse(const String gps_sentence, telemetry_data_t* data) {
   char* token = strtok(buf, ",");
 
   // get  GPS status from header $GPRMC
-  if(strcmp(token, "$GPRMC") == 0){
-    strtok(nullptr, ",");
-    token = strtok(nullptr, ",");
-    data->gpsData.status = String(token);
+   if (strcmp(token, "$GPRMC") == 0) {
+    strtok(nullptr, ",");           // Skip time
+    token = strtok(nullptr, ",");   // Get status
+    if (token) {
+      data->gpsData.status = String(token); // Store A/V
+    }
   }
 
- // get GPS Data from $GPGGA
-  else if (strcmp(token, "$GPGGA") == 0 && !data->gpsData.status.equals("V")) {
+
+ // get GPS Data from $GPGGA - only if we have a GPS lock
+  else if (strcmp(token, "$GPGGA") == 0 /*&& data->gpsData.status.equals("A")*/) {
     
     // 3) UTC time
     token = strtok(nullptr, ".");
