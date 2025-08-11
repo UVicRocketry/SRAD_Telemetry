@@ -5,6 +5,7 @@
 #include <pitches.h>
 
 #define USB_Serial Serial
+#define FC_Serial Serial1
 
 
 SPIClass spi(MOSI, MISO, SCK);
@@ -14,19 +15,22 @@ int transmissionState = RADIOLIB_ERR_NONE;
 Adafruit_NeoPixel pixels(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 SoftwareSerial GPS_Serial(GPS_RX, GPS_TX);
-SoftwareSerial FC_Serial(FC_RX, FC_TX);
+
 
 telemetry_data_t data;
 int prev_second = 0;
 int melody[] = {BUZZER_MELODY};
 int durations[] = {BUZZER_DURATIONS};
-String payload = "Waiting for first GPS Lock";
+String payload = "VE7DAS, Satellite comm. cannot be established.";
 
 void setup() {
 
-  USB_Serial.begin(115200);
+  USB_Serial.begin(9600);
   GPS_Serial.begin(9600);
-  //FC_Serial.begin(9600);
+  FC_Serial.setRx(FC_RX);
+  FC_Serial.setTx(FC_TX);
+  FC_Serial.begin(115200, SERIAL_8N1);
+
 
   spi.begin();
 
@@ -35,7 +39,12 @@ void setup() {
   pixels.setBrightness(5);
 
   data.callsign = CALL_SIGN;
-
+  data.gpsData.lat = "0";
+  data.gpsData.lon = "0";
+  data.gpsData.alt = "0";
+  data.gpsData.fix = 0;
+  data.gpsData.UTCtime = '1';
+  data.prevGPS = "VE7DAS, looking for first GPS lock...";
 
   pinMode(BUZZER_PIN, OUTPUT);
   int size = sizeof(durations) / sizeof(int);
@@ -59,23 +68,31 @@ void setup() {
 
 void loop() {
   
-  //Read & parse GPS Data
-  data.gpsBuff = readGPSSentence();
-  //data.fcBuff = readFCData();
-
+  //Read data from FC and GPS
+  data.gpsBuff = readGPSData();
+  
+  String fc = readFCData();
+  if (fc.length()) {            // only update when we actually got a line
+    data.fcBuff = fc;
+  }
   // parse parse parse
   gpsParse(data.gpsBuff, &data);
-  payload = serializeTelemetry(data); //Serialize data to transmit
+  
 
   //Check for GPS lock
   if(data.gpsData.status.equals("A")){
     SET_LED_BLUE;
+    payload = serializeTelemetry(data);
+    data.prevGPS = payload;
+  }
+  else if(data.gpsData.status.equals("V")){
+    SET_LED_YELLOW;
+    payload = data.prevGPS;
   }
   else{
-    SET_LED_YELLOW;
+    SET_LED_RED;
   }
   
-
  
   //Transmit on every odd second
   int current_second = data.gpsData.UTCtime.toInt();
@@ -85,24 +102,22 @@ void loop() {
       prev_second = current_second;
   }
 
-}
+} 
 
-String readGPSSentence() {
-
-  if (GPS_Serial.available()) {
-    return GPS_Serial.readStringUntil('\n');
-  } else {
-    return ""; 
+String readGPSData() {
+  if(GPS_Serial.available()){
+    String line = GPS_Serial.readStringUntil('\n');
+    return line;
   }
+  return "";
 }
 
 String readFCData(){
-
-  if (FC_Serial.available()) {
-    return FC_Serial.readStringUntil('\n');
-  } else {
-    return ""; 
+  if(FC_Serial.available()){
+    String line = FC_Serial.readStringUntil('\n');
+    return line;
   }
+  return "";
 }
 
 int gpsParse(const String gps_sentence, telemetry_data_t* data) {
@@ -117,16 +132,20 @@ int gpsParse(const String gps_sentence, telemetry_data_t* data) {
 
   // get  GPS status from header $GPRMC
    if (strcmp(token, "$GPRMC") == 0) {
-    strtok(nullptr, ",");           // Skip time
-    token = strtok(nullptr, ",");   // Get status
-    if (token) {
-      data->gpsData.status = String(token); // Store A/V
-    }
+    
+    token = strtok(nullptr, ",");        // time
+    if (token) data->gpsData.UTCtime = String(token);
+
+    
+    token = strtok(nullptr, ",");        // status
+    if (token) data->gpsData.status = String(token);
+
+    return 1;
   }
 
 
  // get GPS Data from $GPGGA - only if we have a GPS lock
-  else if (strcmp(token, "$GPGGA") == 0 /*&& data->gpsData.status.equals("A")*/) {
+  else if (strcmp(token, "$GPGGA") == 0) {
     
     // 3) UTC time
     token = strtok(nullptr, ".");
@@ -134,40 +153,43 @@ int gpsParse(const String gps_sentence, telemetry_data_t* data) {
     data->gpsData.UTCtime = String(token);
     strtok(nullptr, ",");
 
-    // 4) Latitude
-    token = strtok(nullptr, ",");
-    if (!token) return 0;
-    data->gpsData.lat = String(token);
-    // hemisphere
-    token = strtok(nullptr, ",");
-    if (!token) return 0;
-    data->gpsData.lat += token;
+    if(data->gpsData.status.equals("A")){
+      // 4) Latitude
+      token = strtok(nullptr, ",");
+      if (!token) return 0;
+      data->gpsData.lat = String(token);
+      // hemisphere
+      token = strtok(nullptr, ",");
+      if (!token) return 0;
+      data->gpsData.lat += token;
     
-    // 5) Longitude
-    token = strtok(nullptr, ",");
-    if (!token) return 0;
-    data->gpsData.lon = String(token);
-    // hemisphere
-    token = strtok(nullptr, ",");
-    if (!token) return 0;
-    data->gpsData.lon += token;
+      // 5) Longitude
+      token = strtok(nullptr, ",");
+      if (!token) return 0;
+      data->gpsData.lon = String(token);
+      // hemisphere
+      token = strtok(nullptr, ",");
+      if (!token) return 0;
+      data->gpsData.lon += token;
     
-    // 6) Fix quality
-    token = strtok(nullptr, ",");
-    if (!token) return 0;
-    data->gpsData.fix = (uint8_t)atoi(token);
+      // 6) Fix quality
+      token = strtok(nullptr, ",");
+      if (!token) return 0;
+      data->gpsData.fix = (uint8_t)atoi(token);
 
-    // 7) Skip sats & HDOP
-    strtok(nullptr, ",");
-    strtok(nullptr, ",");
+      // 7) Skip sats & HDOP
+      strtok(nullptr, ",");
+      strtok(nullptr, ",");
 
-    // 8) Altitude
-    token = strtok(nullptr, ",");
-    if (!token) return 0;
-    data->gpsData.alt = String(token);
+      // 8) Altitude
+      token = strtok(nullptr, ",");
+      if (!token) return 0;
+      data->gpsData.alt = String(token);
+    }
+    return 1;
   }
 
-  return 1;
+  return 0;
 }
 
 String serializeTelemetry(const telemetry_data_t& t) {
@@ -178,7 +200,6 @@ String serializeTelemetry(const telemetry_data_t& t) {
     t.gpsData.UTCtime.length() +
     t.gpsData.lat.length() +
     t.gpsData.lon.length() +
-    t.gpsData.status.length() +
     t.gpsData.alt.length() +
     t.fcBuff.length() +
     6    // commas
@@ -193,8 +214,7 @@ String serializeTelemetry(const telemetry_data_t& t) {
   out += t.gpsData.lon;
   out += ',';
   out += t.gpsData.alt;
-  out += ',';
-  out += t.gpsData.status;
+
   out += ',';
   out += t.fcBuff;
 

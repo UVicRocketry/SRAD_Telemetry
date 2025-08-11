@@ -62,6 +62,7 @@ typedef struct {
   String callsign;
   gps_data_t gpsData;
   String gpsBuff;
+  String prevGPS;
   String fcBuff;
 } telemetry_data_t;
 
@@ -88,13 +89,8 @@ typedef struct {
 #define TX_EN PA12      
 
 
-// //Transmitter control pins
-// #define TX_EN PA8    
-// #define RX_EN PA15     
-
-
 //Transmitter parameters
-#define TX_POWER           5   // dBm
+#define TX_POWER          10   // dBm
 #define TX_FREQ          915   // MHz   
 #define TX_TCXO          1.8   // V
 #define TX_BW            250   // kHz
