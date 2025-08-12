@@ -16,7 +16,6 @@ Adafruit_NeoPixel pixels(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 SoftwareSerial GPS_Serial(GPS_RX, GPS_TX);
 
-
 telemetry_data_t data;
 int prev_second = 0;
 int melody[] = {BUZZER_MELODY};
@@ -49,20 +48,20 @@ void setup() {
   pinMode(BUZZER_PIN, OUTPUT);
   int size = sizeof(durations) / sizeof(int);
 
-  // for (int note = 0; note < size; note++) {
-  //   //to calculate the note duration, take one second divided by the note type.
-  //   //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
-  //   int duration = (TEMPO * 4) / durations[note];
-  //   tone(BUZZER_PIN, melody[note], duration);
+  for (int note = 0; note < size; note++) {
+    //to calculate the note duration, take one second divided by the note type.
+    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+    int duration = (TEMPO * 4) / durations[note];
+    tone(BUZZER_PIN, melody[note], duration);
 
-  //   //to distinguish the notes, set a minimum time between them.
-  //   //the note's duration + 30% seems to work well:
-  //   int pauseBetweenNotes = duration * 1.30;
-  //   delay(pauseBetweenNotes);
+    //to distinguish the notes, set a minimum time between them.
+    //the note's duration + 30% seems to work well:
+    int pauseBetweenNotes = duration * 1.30;
+    delay(pauseBetweenNotes);
 
-  //   //stop the tone playing:
-  //   noTone(BUZZER_PIN);
-  // }
+    //stop the tone playing:
+    noTone(BUZZER_PIN);
+  }
   
 }
 
@@ -78,22 +77,19 @@ void loop() {
   // parse parse parse
   gpsParse(data.gpsBuff, &data);
   
+  payload = serializeTelemetry(data);
 
-  //Check for GPS lock
+  //GPS Lock LED status
   if(data.gpsData.status.equals("A")){
     SET_LED_BLUE;
-    payload = serializeTelemetry(data);
-    data.prevGPS = payload;
   }
   else if(data.gpsData.status.equals("V")){
     SET_LED_YELLOW;
-    payload = data.prevGPS;
   }
   else{
     SET_LED_RED;
   }
   
- 
   //Transmit on every odd second
   int current_second = data.gpsData.UTCtime.toInt();
   if(current_second != prev_second && (current_second % 2) == 1){
