@@ -133,9 +133,8 @@ int gpsParse(const String gps_sentence, telemetry_data_t* data) {
   // get  GPS status from header $GPRMC
    if (strcmp(token, "$GPRMC") == 0) {
     
-    token = strtok(nullptr, ",");        // time
-    if (token) data->gpsData.UTCtime = String(token);
-
+    
+    strtok(nullptr, ","); // time
     
     token = strtok(nullptr, ",");        // status
     if (token) data->gpsData.status = String(token);
